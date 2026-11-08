@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adsterra Stats</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div class="brand-text">
+          <h1>Adsterra Stats</h1>
+          <p id="rangeLabel" class="muted">Cargando...</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="lastUpdate" class="pill">Sin datos</span>
+        <button id="settingsBtn" class="btn btn-ghost" type="button">Token</button>
+        <button id="refreshBtn" class="btn btn-primary" type="button">Actualizar</button>
+      </div>
+    </header>
+
+    <section id="tokenPanel" class="panel token-panel hidden">
+      <div class="panel-head">
+        <h2>Conectar con Adsterra</h2>
+        <p class="muted">Pega tu API token. Se guarda en las propiedades privadas del script y nunca se envía al navegador.</p>
+      </div>
+      <div class="token-form">
+        <input id="tokenInput" type="password" class="input" placeholder="X-API-Key de Adsterra" autocomplete="off" spellcheck="false">
+        <button id="saveTokenBtn" class="btn btn-primary" type="button">Guardar y validar</button>
+        <button id="deleteTokenBtn" class="btn btn-ghost hidden" type="button">Eliminar token</button>
+        <button id="cancelTokenBtn" class="btn btn-ghost hidden" type="button">Cancelar</button>
+      </div>
+      <p id="tokenMessage" class="message hidden"></p>
+      <p class="hint">Genera el token en <strong>Settings &rarr; API</strong> del panel de Adsterra.</p>
+    </section>
+
+    <section class="panel filters">
+      <div class="filter-group">
+        <label for="presetSelect">Rango</label>
+        <select id="presetSelect" class="input">
+          <option value="today">Hoy</option>
+          <option value="yesterday">Ayer</option>
+          <option value="7d" selected>Últimos 7 días</option>
+          <option value="30d">Últimos 30 días</option>
+          <option value="thisMonth">Este mes</option>
+          <option value="lastMonth">Mes pasado</option>
+          <option value="custom">Personalizado</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="startDate">Desde</label>
+        <input id="startDate" type="date" class="input">
+      </div>
+      <div class="filter-group">
+        <label for="finishDate">Hasta</label>
+        <input id="finishDate" type="date" class="input">
+      </div>
+      <div class="filter-group grow">
+        <label for="domainSelect">Sitio web</label>
+        <select id="domainSelect" class="input">
+          <option value="">Todos los sitios</option>
+        </select>
+      </div>
+      <div class="filter-group grow">
+        <label for="placementSelect">Placement</label>
+        <select id="placementSelect" class="input">
+          <option value="">Todos los placements</option>
+        </select>
+      </div>
+      <div class="filter-group checkbox">
+        <label><input id="includeCountries" type="checkbox" checked> Incluir países</label>
+      </div>
+      <button id="applyBtn" class="btn btn-primary" type="button">Aplicar</button>
+    </section>
+
+    <section id="kpis" class="kpis">
+      <article class="kpi">
+        <span class="kpi-label">Impresiones</span>
+        <strong id="kpiImpressions" class="kpi-value">&mdash;</strong>
+        <span class="kpi-foot">Volumen total</span>
+      </article>
+      <article class="kpi">
+        <span class="kpi-label">Clicks</span>
+        <strong id="kpiClicks" class="kpi-value">&mdash;</strong>
+        <span class="kpi-foot">Clics registrados</span>
+      </article>
+      <article class="kpi">
+        <span class="kpi-label">CTR</span>
+        <strong id="kpiCtr" class="kpi-value">&mdash;</strong>
+        <span class="kpi-foot">Clicks / impresiones</span>
+      </article>
+      <article class="kpi">
+        <span class="kpi-label">CPM</span>
+        <strong id="kpiCpm" class="kpi-value">&mdash;</strong>
+        <span class="kpi-foot">Ganancia por 1.000</span>
+      </article>
+      <article class="kpi kpi-accent">
+        <span class="kpi-label">Ganancias</span>
+        <strong id="kpiRevenue" class="kpi-value">&mdash;</strong>
+        <span class="kpi-foot">Moneda: USD</span>
+      </article>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="table-head">
+        <nav id="tabs" class="tabs" role="tablist">
+          <button class="tab active" data-tab="daily" type="button">Por fecha</button>
+          <button class="tab" data-tab="domains" type="button">Por sitio</button>
+          <button class="tab" data-tab="placements" type="button">Por placement</button>
+          <button class="tab" data-tab="formats" type="button">Por formato</button>
+          <button class="tab" data-tab="countries" type="button">Por país</button>
+          <button class="tab" data-tab="history" type="button">Historial</button>
+        </nav>
+        <div class="table-actions">
+          <span id="tableCount" class="muted"></span>
+          <button id="exportBtn" class="btn btn-ghost" type="button">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div id="statusBar" class="status hidden"></div>
+
+      <div id="historyTools" class="history-tools hidden">
+        <div id="historyStatus" class="muted"></div>
+        <div class="history-buttons">
+          <button id="saveYesterdayBtn" class="btn btn-primary" type="button">Guardar ayer</button>
+          <button id="backfillBtn" class="btn btn-ghost" type="button">Rellenar rango</button>
+          <button id="installTriggerBtn" class="btn btn-ghost" type="button">Activar automático</button>
+          <button id="removeTriggerBtn" class="btn btn-ghost" type="button">Desactivar automático</button>
+          <a id="openSheetLink" class="btn btn-ghost hidden" href="#" target="_blank" rel="noopener">Abrir hoja</a>
+        </div>
+      </div>
+
+      <div id="tableWrap" class="table-wrap"></div>
+    </section>
+
+    <footer class="footer muted">
+      Datos de Adsterra Publisher API. CTR y CPM recalculados sobre impresiones. Moneda: USD.
+    </footer>
+  </div>
+
+  <div id="toast" class="toast hidden"></div><script src="javascript.js"></script>
+</body>
+</html>
