@@ -1,27 +1,40 @@
 {
+  "id": "./",
   "name": "Prizmothyn",
   "short_name": "Prizmothyn",
-  "start_url": "/",
+  "description": "Comunidad y catálogo de addons para Minecraft Bedrock.",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#087a55",
   "orientation": "portrait-primary",
+  "categories": ["social", "games", "utilities"],
   "icons": [
     {
-      "src": "icon/icon.png",
+      "src": "icon/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icon/icon.png",
+      "src": "icon/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon/title.png",
-      "sizes": "512x512",
+      "sizes": "2048x916",
       "type": "image/png"
     }
   ]

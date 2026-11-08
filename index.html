@@ -1,20 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Vinculación del Manifest -->
-  <link rel="manifest" href="/manifest.json">
-
-  <!-- Color de la barra de estado e interfaz de Android -->
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- Icono de la aplicación -->
-  <link rel="icon" href="icon/icon.png" type="image/png">
-  <link rel="apple-touch-icon" href="icon/icon.png">
-  
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3LVCX19L6W"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -27,6 +13,13 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
 <link rel="icon" href="icon/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#087a55">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Prizmothyn">
 <title>Prizmothyn · Addons Bedrock</title>
 <style>
   :root {
@@ -1462,20 +1455,6 @@
   }
   .addon-detail { max-width: 760px; width: 100%; }
   .addon-detail .modal-head { align-items: flex-start; gap: 12px; }
-  .addon-detail-id {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 12px;
-    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-    word-break: break-all;
-  }
   .addon-detail h3 { margin: 0; font-size: 24px; line-height: 1.2; }
   .addon-detail-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 10px 0 16px; color: var(--muted); font-size: 13px; }
   .addon-detail-gallery { display: flex; flex-direction: column; gap: 8px; }
@@ -1613,7 +1592,6 @@
   @media (max-width: 600px) {
     .addon-detail-modal .addon-detail { padding: 0 14px 28px; }
     .addon-detail-modal .addon-detail .modal-head { padding: 10px 0; }
-    .addon-detail-modal .addon-detail-id { max-width: min(55vw, 260px); }
     .addon-detail-modal .addon-detail h3 { font-size: 19px; }
     .addon-detail-modal #addonDetailBody { padding-top: 14px; }
     .addon-detail-modal .addon-gallery-main { aspect-ratio: 4 / 3; max-height: 58vh; }
@@ -2172,7 +2150,6 @@
         <button class="icon-btn addon-detail-back" id="closeAddonBtn" type="button" aria-label="Volver">&lt;</button>
       </div>
       <div>
-        <span class="addon-detail-id" id="addonDetailId">ID</span>
         <h3 id="addonDetailTitle">Complemento</h3>
       </div>
       <div class="addon-detail-share-actions">
@@ -6584,7 +6561,6 @@
     state.addons.detail = null;
     state.addons.detailRoute = null;
     state.seeds.detail = seed;
-    $('#addonDetailId').textContent = 'MC Bedrock · ' + (seed.version || '');
     $('#addonDetailTitle').textContent = seed.titulo || 'Semilla';
     $('#addonDetailBody').innerHTML = seedDetailHTML_(seed);
     var modal = $('#addonModal');
@@ -7873,7 +7849,6 @@
         '</div>'
       : '';
 
-    $('#addonDetailId').textContent = 'ID ' + addon.id;
     $('#addonDetailTitle').textContent = addon.nombre;
     $('#addonDetailBody').innerHTML =
       '<div class="addon-detail-meta">' +
@@ -8008,7 +7983,6 @@
     var seq = ++state.addons.detailSeq;
     state.addons.detail = null;
     state.addons.galleryIndex = 0;
-    $('#addonDetailId').textContent = 'ID ' + id;
     $('#addonDetailTitle').textContent = 'Cargando complemento...';
     $('#addonDetailBody').innerHTML = '<div class="center-load addon-detail-loading"><div class="spinner"></div></div>';
     modal.classList.remove('hidden');
@@ -9920,6 +9894,13 @@
     init();
   }
 })();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
 </script>
 </body>
 </html>
