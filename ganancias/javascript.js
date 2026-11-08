@@ -12,6 +12,7 @@
       historyStatus: null,
       activeTab: 'daily',
       loading: false,
+      pollTimer: null,
       backfillPending: false,
       sort: {
         daily: { key: 'date', dir: 'asc' },
@@ -107,6 +108,7 @@
       WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxPjQ06f6JkIggVWiA0f9Q7I2H_agdvAcPOm0HE3hQY77KIv06GZBugAmZO_YkjWEcA/exec',
       ACCESS_KEY: ''
     };
+    var POLL_INTERVAL_MS = 3000;
     (function () {
       try {
         var params = new URLSearchParams(window.location.search);
@@ -268,6 +270,10 @@
         var firstThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         return { startDate: toIso(firstThisMonth), finishDate: finish };
       }
+      if (preset === 'thisYear') {
+        var firstThisYear = new Date(today.getFullYear(), 0, 1);
+        return { startDate: toIso(firstThisYear), finishDate: finish };
+      }
       if (preset === 'lastMonth') {
         var firstLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         var lastLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
@@ -322,8 +328,9 @@
       }, 4500);
     }
 
-    function setLoading(value) {
+    function setLoading(value, silent) {
       state.loading = value;
+      if (silent) { return; }
       $('refreshBtn').disabled = value;
       $('applyBtn').disabled = value;
       $('saveYesterdayBtn').disabled = value;
@@ -399,7 +406,7 @@
       populatePlacements('');
     }
 
-    function handleServerError(result) {
+    function handleServerError(result, silent) {
       var code = result && result.code;
       var message = result && result.message ? result.message : 'Error desconocido.';
       if (code === 'TOKEN_MISSING' || code === 'AUTH') {
@@ -408,22 +415,23 @@
         setTokenMessage(message, 'error');
       }
       setStatus(message, 'error');
-      showToast(message, 'error');
+      if (!silent) { showToast(message, 'error'); }
     }
 
-    async function refresh() {
+    async function refresh(silent) {
+      var isSilent = silent === true;
       if (state.loading) { return; }
       var filters = collectFilters();
       if (!filters.startDate || !filters.finishDate) {
-        showToast('Selecciona un rango de fechas.', 'error');
+        if (!isSilent) { showToast('Selecciona un rango de fechas.', 'error'); }
         return;
       }
-      setLoading(true);
-      setStatus('Consultando Adsterra...', 'info');
+      setLoading(true, isSilent);
+      if (!isSilent) { setStatus('Consultando Adsterra...', 'info'); }
       try {
         var result = await callServer('getDashboard', filters);
         if (!result || !result.ok) {
-          handleServerError(result);
+          handleServerError(result, isSilent);
           return;
         }
         state.data = result;
@@ -432,13 +440,32 @@
       } catch (error) {
         setStatus(error.message || 'Error al consultar la API.', 'error');
       } finally {
-        setLoading(false);
+        setLoading(false, isSilent);
+      }
+    }
+
+    function startAutoRefresh() {
+      if (state.pollTimer !== null) { return; }
+      state.pollTimer = window.setInterval(function () {
+        if (state.hasToken && document.visibilityState !== 'hidden') {
+          refresh(true);
+        }
+      }, POLL_INTERVAL_MS);
+    }
+
+    function stopAutoRefresh() {
+      if (state.pollTimer !== null) {
+        window.clearInterval(state.pollTimer);
+        state.pollTimer = null;
       }
     }
 
     function renderAll() {
       var data = state.data;
       $('rangeLabel').textContent = data.range.startDate + ' a ' + data.range.finishDate + ' (' + data.range.days + ' días)';
+      var yearToDate = data.yearToDate || {};
+      $('annualRevenueYear').textContent = yearToDate.year || '—';
+      $('annualRevenue').textContent = yearToDate.revenue === undefined ? '—' : formatMoney(yearToDate.revenue);
       if (data.meta && data.meta.dbLastUpdateTime) {
         $('lastUpdate').textContent = 'Datos: ' + data.meta.dbLastUpdateTime;
       } else {
@@ -494,6 +521,7 @@
       var config = TABLES[state.activeTab];
       if (!config) { return; }
       var wrap = $('tableWrap');
+      var scrollTop = wrap.scrollTop;
       wrap.innerHTML = '';
       if (state.activeTab === 'history') {
         renderHistoryTools();
@@ -515,6 +543,7 @@
           empty.textContent = 'No hay datos para los filtros seleccionados.';
         }
         wrap.appendChild(empty);
+        wrap.scrollTop = scrollTop;
         return;
       }
 
@@ -631,6 +660,7 @@
       }
 
       wrap.appendChild(table);
+      wrap.scrollTop = scrollTop;
     }
 
     function csvCell(value) {
@@ -808,6 +838,7 @@
         hideTokenPanel();
         showToast('Token guardado correctamente.', 'success');
         await refresh();
+        startAutoRefresh();
       } catch (error) {
         setTokenMessage(error.message || 'Error al guardar el token.', 'error');
       } finally {
@@ -818,6 +849,7 @@
     async function deleteToken() {
       try {
         await callServer('deleteApiToken');
+        stopAutoRefresh();
         state.hasToken = false;
         state.optionsLoaded = false;
         state.data = null;
@@ -889,6 +921,7 @@
         hideTokenPanel();
         await loadOptions();
         await refresh();
+        startAutoRefresh();
       } catch (error) {
         setStatus(error.message || 'Error al iniciar la aplicación.', 'error');
       }

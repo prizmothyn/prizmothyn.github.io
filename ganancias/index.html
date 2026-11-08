@@ -18,6 +18,11 @@
         </div>
       </div>
       <div class="topbar-actions">
+        <div class="annual-balance" aria-live="polite">
+          <span class="annual-balance-label">Ganancias del año · <span id="annualRevenueYear">—</span></span>
+          <strong id="annualRevenue" class="annual-balance-value">&mdash;</strong>
+          <span class="annual-balance-foot">USD acumulados</span>
+        </div>
         <span id="lastUpdate" class="pill">Sin datos</span>
         <button id="settingsBtn" class="btn btn-ghost" type="button">Token</button>
         <button id="refreshBtn" class="btn btn-primary" type="button">Actualizar</button>
@@ -48,6 +53,7 @@
           <option value="7d" selected>Últimos 7 días</option>
           <option value="30d">Últimos 30 días</option>
           <option value="thisMonth">Este mes</option>
+          <option value="thisYear">Este año</option>
           <option value="lastMonth">Mes pasado</option>
           <option value="custom">Personalizado</option>
         </select>
