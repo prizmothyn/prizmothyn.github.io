@@ -483,6 +483,109 @@
     color: var(--muted);
   }
   .whatsapp-invite-close:hover { background: var(--line); color: var(--text); }
+  .assistant-chat-toggle {
+    position: fixed;
+    left: max(20px, env(safe-area-inset-left));
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    z-index: 85;
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: var(--brand);
+    color: var(--brand-on);
+    box-shadow: var(--shadow);
+    font-size: 25px;
+  }
+  .assistant-chat-toggle:hover { background: var(--brand-2); transform: translateY(-2px); }
+  .assistant-chat-panel {
+    position: fixed;
+    left: max(20px, env(safe-area-inset-left));
+    bottom: calc(156px + env(safe-area-inset-bottom));
+    z-index: 85;
+    display: flex;
+    flex-direction: column;
+    width: min(380px, calc(100vw - 32px));
+    height: min(540px, calc(100dvh - 190px - env(safe-area-inset-bottom)));
+    min-height: 300px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+  .assistant-chat-head {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(135deg, rgba(var(--brand-rgb), .12), transparent);
+  }
+  .assistant-chat-head strong { display: block; }
+  .assistant-chat-head small { color: var(--muted); }
+  .assistant-chat-messages {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    padding: 14px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .assistant-chat-message {
+    max-width: 90%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 15px 15px 15px 4px;
+    background: var(--panel-2);
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .assistant-chat-message.user {
+    align-self: flex-end;
+    border-color: rgba(var(--brand-rgb), .2);
+    border-radius: 15px 15px 4px 15px;
+    background: rgba(var(--brand-rgb), .12);
+  }
+  .assistant-chat-actions, .assistant-chat-results { display: grid; gap: 7px; margin-top: 9px; }
+  .assistant-chat-actions .btn, .assistant-chat-results .btn { justify-content: flex-start; text-align: left; }
+  .assistant-chat-result { padding: 9px; border: 1px solid var(--line); border-radius: 12px; }
+  .assistant-chat-result strong { display: block; font-size: 13px; }
+  .assistant-chat-result span { display: block; margin: 2px 0 7px; color: var(--muted); font-size: 11px; }
+  .assistant-chat-form {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+  .assistant-chat-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .assistant-chat-form input:focus { outline: 2px solid rgba(var(--brand-rgb), .35); }
+  @media (max-width: 600px) {
+    .assistant-chat-toggle { left: max(14px, env(safe-area-inset-left)); bottom: calc(78px + env(safe-area-inset-bottom)); }
+    .assistant-chat-panel {
+      left: max(12px, env(safe-area-inset-left));
+      bottom: calc(146px + env(safe-area-inset-bottom));
+      width: calc(100vw - 24px);
+      height: min(68dvh, 520px);
+    }
+  }
   @media (max-width: 520px) {
     .whatsapp-invite { top: 88px; right: 12px; gap: 10px; padding: 13px; }
     .whatsapp-invite-icon { width: 40px; height: 40px; border-radius: 13px; }
@@ -2154,6 +2257,34 @@
     <button type="button" data-app-view="skins" aria-label="Crear skin" title="Crear skin"><span class="bottom-icon" aria-hidden="true">🎨</span><span class="bottom-label">Skins</span></button>
     <button type="button" data-app-view="settings" aria-label="Ajustes" title="Ajustes"><span class="bottom-icon" aria-hidden="true">⚙️</span><span class="bottom-label">Ajustes</span></button>
   </nav>
+  <button id="assistantChatToggle" class="assistant-chat-toggle" type="button"
+    aria-label="Abrir asistente de Prizmothyn" aria-expanded="false" aria-controls="assistantChatPanel">💬</button>
+  <section id="assistantChatPanel" class="assistant-chat-panel hidden" role="dialog"
+    aria-label="Asistente virtual de Prizmothyn" aria-modal="false">
+    <header class="assistant-chat-head">
+      <div><strong>Asistente Prizmothyn</strong><small>Guías y ayuda rápida</small></div>
+      <button id="assistantChatClose" class="icon-btn" type="button" aria-label="Cerrar chat">✕</button>
+    </header>
+    <div id="assistantChatMessages" class="assistant-chat-messages" aria-live="polite" aria-relevant="additions">
+      <div class="assistant-chat-message">
+        ¡Hola! Puedo explicarte las funciones de Prizmothyn, recomendar contenido de Bedrock o ayudarte con reportes. Soy un asistente guiado; no uso IA generativa.
+        <div class="assistant-chat-actions">
+          <button class="btn ghost small" type="button" data-chat-action="about">ℹ️ ¿Qué es Prizmothyn?</button>
+          <button class="btn ghost small" type="button" data-chat-action="recommend">🔎 Recomendar addons</button>
+          <button class="btn ghost small" type="button" data-chat-action="install">📥 Cómo instalar addons</button>
+          <button class="btn ghost small" type="button" data-chat-action="tools-info">🧭 Herramientas Bedrock</button>
+          <button class="btn ghost small" type="button" data-chat-action="report-error">🐞 Reportar un error</button>
+          <button class="btn ghost small" type="button" data-chat-action="suggestion">💡 Enviar sugerencia</button>
+          <button class="btn ghost small" type="button" data-chat-action="report-account">👤 Reportar una cuenta</button>
+        </div>
+      </div>
+    </div>
+    <form class="assistant-chat-form" data-chat-form>
+      <input id="assistantChatInput" maxlength="1000" autocomplete="off"
+        aria-label="Escribe tu mensaje" placeholder="Escribe tu pregunta..." required>
+      <button class="btn primary" type="submit" aria-label="Enviar mensaje">➤</button>
+    </form>
+  </section>
 </div>
 
 <!-- ══════════════ MODAL EDITAR PERFIL ══════════════ -->
@@ -2390,6 +2521,7 @@
     routeLock: false,
     feed: { offset: 0, hasMore: true, loading: false, filter: 'todos', seq: 0 },
     report: { targetUser: null, searchTimer: null, searchSeq: 0, reports: [], loaded: false },
+    chat: { open: false, mode: '', reportDraft: null },
     admin: { words: [], users: [], searchTimer: null, query: '', searchSeq: 0 },
     servers: {
       items: [], loaded: false, image: '', editId: '', formOpen: false,
@@ -3680,6 +3812,321 @@
     }
   }
 
+  function setAssistantChatOpen(open) {
+    state.chat.open = !!open;
+    $('#assistantChatPanel').classList.toggle('hidden', !state.chat.open);
+    $('#assistantChatToggle').setAttribute('aria-expanded', state.chat.open ? 'true' : 'false');
+    if (state.chat.open) $('#assistantChatInput').focus();
+    else $('#assistantChatToggle').focus();
+  }
+
+  function assistantChatMessage(text, role, actions, addons) {
+    var messages = $('#assistantChatMessages');
+    var message = document.createElement('div');
+    message.className = 'assistant-chat-message' + (role === 'user' ? ' user' : '');
+    message.textContent = text;
+
+    if (actions && actions.length) {
+      var actionBox = document.createElement('div');
+      actionBox.className = 'assistant-chat-actions';
+      actions.forEach(function (action) {
+        var button = document.createElement('button');
+        button.className = 'btn ghost small';
+        button.type = 'button';
+        button.dataset.chatAction = action.action;
+        button.textContent = action.label;
+        actionBox.appendChild(button);
+      });
+      message.appendChild(actionBox);
+    }
+
+    if (addons && addons.length) {
+      var resultBox = document.createElement('div');
+      resultBox.className = 'assistant-chat-results';
+      addons.forEach(function (addon) {
+        var card = document.createElement('div');
+        card.className = 'assistant-chat-result';
+        var title = document.createElement('strong');
+        title.textContent = addon.nombre;
+        var category = document.createElement('span');
+        category.textContent = addon.categoria || 'Complemento';
+        var button = document.createElement('button');
+        button.className = 'btn ghost small';
+        button.type = 'button';
+        button.dataset.chatAddon = addon.id;
+        button.textContent = 'Ver complemento';
+        card.appendChild(title);
+        card.appendChild(category);
+        card.appendChild(button);
+        resultBox.appendChild(card);
+      });
+      message.appendChild(resultBox);
+    }
+
+    messages.appendChild(message);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function assistantChatAction(action) {
+    if (action === 'about') {
+      assistantChatMessage(
+        'Prizmothyn es una plataforma comunitaria para Minecraft Bedrock, disponible como web y PWA instalable. Reúne catálogo de contenido, semillas, servidores, herramientas y una red social. Puedes explorar y descargar sin crear una cuenta.',
+        'assistant',
+        [
+          { action: 'catalog-info', label: 'Ver qué hay en el catálogo' },
+          { action: 'tools-info', label: 'Conocer las herramientas' },
+          { action: 'community', label: 'Comunidad y cuentas' }
+        ]
+      );
+      return;
+    }
+    if (action === 'catalog-info') {
+      assistantChatMessage(
+        'El catálogo incluye texturas, addons, mapas, skins, scripts, versiones y semillas. Puedes buscar por nombre, filtrar categorías y ordenar por descargas, valoraciones o fecha. Abre una ficha para ver imágenes, versión, autor, descripción y enlace de descarga. Descargar no requiere iniciar sesión.',
+        'assistant',
+        [{ action: 'addons', label: 'Explorar catálogo' }, { action: 'install', label: 'Cómo instalar un addon' }]
+      );
+      return;
+    }
+    if (action === 'seeds') {
+      assistantChatMessage(
+        'Las fichas de semillas incluyen versión, descripción, imágenes y hasta tres ubicaciones con coordenadas X, Y y Z. Puedes copiar la semilla o las coordenadas para usarlas en tu mundo.',
+        'assistant',
+        [{ action: 'addons', label: 'Buscar semillas en el catálogo' }, { action: 'tools-info', label: 'Ver herramientas de coordenadas' }]
+      );
+      return;
+    }
+    if (action === 'tools-info') {
+      assistantChatMessage(
+        'Prizmothyn incluye un conversor Nether/Overworld (X y Z usan proporción 8:1; Y se conserva), un planificador de encantamientos para Bedrock que considera incompatibilidades y el límite de 39 niveles del yunque, 22 recetas de pociones y un creador de skins 64×64 que puede importar PNG 64×32.',
+        'assistant',
+        [
+          { action: 'tools', label: 'Abrir coordenadas y encantamientos' },
+          { action: 'potions', label: 'Abrir recetas de pociones' },
+          { action: 'skins', label: 'Abrir creador de skins' }
+        ]
+      );
+      return;
+    }
+    if (action === 'skin-info') {
+      assistantChatMessage(
+        'El creador de skins permite editar una skin Bedrock de 64×64 sobre un modelo 3D, importar PNG de 64×64 o del formato antiguo 64×32, guardar el trabajo localmente y descargarlo como PNG 64×64.',
+        'assistant',
+        [{ action: 'skins', label: 'Abrir creador de skins' }]
+      );
+      return;
+    }
+    if (action === 'community') {
+      assistantChatMessage(
+        'La comunidad permite publicar texto e imágenes (hasta 20), comentar, dar me gusta, seguir perfiles y recibir notificaciones. Explorar el catálogo, usar las herramientas y descargar contenido es público; publicar, comentar y guardar favoritos requiere una cuenta.',
+        'assistant',
+        [{ action: 'report-account', label: 'Reportar una cuenta' }]
+      );
+      return;
+    }
+    if (action === 'servers-info') {
+      assistantChatMessage(
+        'El catálogo comunitario de servidores muestra su estado, jugadores, versión, descripción y dirección. Puedes copiar la IP y el puerto; el estado se actualiza automáticamente.',
+        'assistant',
+        [{ action: 'servers', label: 'Ver servidores Bedrock' }]
+      );
+      return;
+    }
+    if (action === 'recommend') {
+      state.chat.mode = 'recommend';
+      assistantChatMessage('¿Qué buscas? Por ejemplo: shaders, mapas, texturas o addons de supervivencia.');
+      $('#assistantChatInput').focus();
+      return;
+    }
+    if (action === 'install') {
+      assistantChatMessage(
+        'Para instalar un addon: 1) abre su ficha y revisa la versión compatible y sus instrucciones; ' +
+        '2) descarga el archivo desde el enlace del creador; 3) abre el archivo con Minecraft; ' +
+        '4) activa los paquetes de recursos o comportamiento en los ajustes del mundo. ' +
+        'Los pasos pueden variar según el dispositivo y el formato del archivo.',
+        'assistant',
+        [{ action: 'addons', label: 'Explorar catálogo' }]
+      );
+      return;
+    }
+    if (action === 'report-error' || action === 'suggestion') {
+      if (!requireLogin('Inicia sesión para enviar un reporte privado.')) {
+        assistantChatMessage('Inicia sesión o crea una cuenta y vuelve a abrir el asistente para enviarlo.');
+        return;
+      }
+      var type = action === 'suggestion' ? 'sugerencia' : 'error';
+      state.chat.reportDraft = { tipo: type, step: 'title' };
+      state.chat.mode = '';
+      assistantChatMessage(type === 'sugerencia'
+        ? 'Cuéntame tu idea en un título breve (máximo 120 caracteres).'
+        : 'Cuéntame qué ocurrió en un título breve (máximo 120 caracteres).');
+      $('#assistantChatInput').focus();
+      return;
+    }
+    if (action === 'report-account') {
+      if (!requireLogin('Inicia sesión para reportar una cuenta.')) {
+        assistantChatMessage('Inicia sesión o crea una cuenta para reportar una cuenta.');
+        return;
+      }
+      assistantChatMessage('Abriré el formulario privado para que busques y selecciones la cuenta correcta.');
+      setAssistantChatOpen(false);
+      navigate('settings').then(function () {
+        var typeSelect = $('#reportType');
+        var targetInput = $('#reportTargetSearch');
+        if (typeSelect) {
+          typeSelect.value = 'cuenta';
+          setReportType('cuenta');
+        }
+        if (targetInput) targetInput.focus();
+      });
+      return;
+    }
+    if (action === 'addons') {
+      setAssistantChatOpen(false);
+      navigate('addons');
+      return;
+    }
+    var destinations = {
+      tools: { view: 'tools', label: 'Abriendo las herramientas de coordenadas y encantamientos.' },
+      skins: { view: 'skins', label: 'Abriendo el creador de skins.' },
+      potions: { view: 'potions', label: 'Abriendo las recetas de pociones.' },
+      servers: { view: 'servers', label: 'Abriendo el catálogo de servidores.' }
+    };
+    if (destinations[action]) {
+      assistantChatMessage(destinations[action].label);
+      setAssistantChatOpen(false);
+      navigate(destinations[action].view);
+      return;
+    }
+    assistantChatMessage('Puedo ayudarte a encontrar addons, explicar cómo instalarlos o abrir una herramienta.', 'assistant', [
+      { action: 'recommend', label: 'Recomendar addons' },
+      { action: 'install', label: 'Guía de instalación' },
+      { action: 'tools', label: 'Herramientas Bedrock' }
+    ]);
+  }
+
+  async function assistantChatRecommend(query) {
+    var search = Security.sanitizeText(query || '').trim()
+      .replace(/^(?:me puedes |puedes |quiero |busco |recomiendame |recomiéndame )/i, '')
+      .replace(/\b(?:addons?|complementos?|modificaciones?|buscar|recomendar|recomiendame|recomiéndame|por favor|algo|algún|alguna|para|de|del|un|una|que|con)\b/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60);
+    if (!search) {
+      assistantChatMessage('Escribe una palabra o tema para buscar, como “mapas”, “texturas” o “supervivencia”.');
+      return;
+    }
+    assistantChatMessage('Buscando en el catálogo: ' + search + '…');
+    try {
+      var result = await api('getAddons', {
+        q: search,
+        sort: 'descargas',
+        category: '',
+        scope: 'all',
+        offset: 0,
+        limit: 3
+      });
+      var matches = (result.addons || []).filter(function (addon) {
+        return addon && addon.id && addon.nombre;
+      });
+      if (!matches.length) {
+        assistantChatMessage('No encontré coincidencias con ese término. Prueba otra palabra o explora el catálogo.', 'assistant', [
+          { action: 'addons', label: 'Abrir catálogo' }
+        ]);
+        return;
+      }
+      assistantChatMessage('Estas son algunas coincidencias, ordenadas por descargas:', 'assistant', null, matches);
+    } catch (err) {
+      assistantChatMessage('No pude consultar el catálogo ahora: ' +
+        ((err && err.message) || 'error de conexión') + '. Puedes intentarlo de nuevo o abrir el catálogo.', 'assistant', [
+        { action: 'recommend', label: 'Intentar de nuevo' },
+        { action: 'addons', label: 'Abrir catálogo' }
+      ]);
+    }
+  }
+
+  async function assistantChatSubmit(form) {
+    var input = $('#assistantChatInput');
+    var text = Security.sanitizeText(input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    assistantChatMessage(text, 'user');
+
+    if (state.chat.reportDraft) {
+      var draft = state.chat.reportDraft;
+      if (draft.step === 'title') {
+        if (text.length < 3 || text.length > 120) {
+          assistantChatMessage('El título debe tener entre 3 y 120 caracteres. Inténtalo de nuevo.');
+          return;
+        }
+        draft.titulo = text;
+        draft.step = 'detail';
+        assistantChatMessage('Ahora describe los detalles (mínimo 10 caracteres). No incluyas contraseñas ni datos privados.');
+        return;
+      }
+      if (text.length < 10 || text.length > 2500) {
+        assistantChatMessage('Los detalles deben tener entre 10 y 2500 caracteres. Inténtalo de nuevo.');
+        return;
+      }
+      var submitButton = form.querySelector('[type="submit"]');
+      setBusy(submitButton, true, 'Enviando...');
+      try {
+        await api('crearReporte', { tipo: draft.tipo, titulo: draft.titulo, detalle: text });
+        state.chat.reportDraft = null;
+        assistantChatMessage('Gracias. Tu reporte privado fue enviado al equipo para su revisión.');
+      } catch (err) {
+        assistantChatMessage('No se pudo enviar el reporte: ' +
+          ((err && err.message) || 'error de conexión') + '. Puedes intentarlo más tarde.');
+      } finally {
+        setBusy(submitButton, false);
+      }
+      return;
+    }
+
+    if (state.chat.mode === 'recommend') {
+      state.chat.mode = '';
+      await assistantChatRecommend(text);
+      return;
+    }
+
+    var intent = text.toLowerCase();
+    if (/qué es|que es|prizmothyn|qué ofrece|que ofrece/.test(intent)) {
+      assistantChatAction('about');
+    } else if (/semilla|semillas|coordenada/.test(intent)) {
+      assistantChatAction(/coordenada/.test(intent) ? 'tools-info' : 'seeds');
+    } else if (/servidor/.test(intent)) {
+      assistantChatAction('servers-info');
+    } else if (/catálogo|catalogo|categor[ií]a|contenido bedrock/.test(intent)) {
+      assistantChatAction('catalog-info');
+    } else if (/sugerencia|sugerir|idea|propon|mejora/.test(intent)) {
+      assistantChatAction('suggestion');
+    } else if (/report|denunci/.test(intent) && /cuenta|usuario|perfil/.test(intent)) {
+      assistantChatAction('report-account');
+    } else if (/report|denunci/.test(intent)) {
+      assistantChatAction('report-error');
+    } else if (/comunidad|cuenta|favorito|coleccion|publicar|comentario/.test(intent)) {
+      assistantChatAction('community');
+    } else if (/error|bug|fall|problema/.test(intent)) {
+      assistantChatAction('report-error');
+    } else if (/instal|descarg|import/.test(intent)) {
+      assistantChatAction('install');
+    } else if (/pocion|poción/.test(intent)) {
+      assistantChatAction('tools-info');
+    } else if (/addon|complement|shader|textura|mapa|mod|buscar/.test(intent)) {
+      await assistantChatRecommend(text);
+    } else if (/coorden|encant|herramient/.test(intent)) {
+      assistantChatAction('tools-info');
+    } else if (/skin/.test(intent)) {
+      assistantChatAction('skin-info');
+    } else {
+      assistantChatMessage('Puedo responder preguntas sobre el catálogo, descargas, semillas, coordenadas, encantamientos, pociones, skins, servidores, la comunidad y reportes. Elige un tema o descríbeme qué necesitas.', 'assistant', [
+        { action: 'about', label: 'Acerca de Prizmothyn' },
+        { action: 'recommend', label: 'Buscar addons' },
+        { action: 'tools-info', label: 'Herramientas Bedrock' }
+      ]);
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────────────
   //  Navegación
   // ─────────────────────────────────────────────────────────────────────
@@ -3714,6 +4161,11 @@
       if (!e.target.closest('.post-menu-wrap, .comment-menu-wrap')) closeActionMenus();
     });
     document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && state.chat.open) {
+        e.preventDefault();
+        setAssistantChatOpen(false);
+        return;
+      }
       var dialog = $('#appDialog');
       if (!dialog.classList.contains('hidden')) {
         if (e.key === 'Escape') {
@@ -6230,10 +6682,11 @@
         '<section class="card settings-card">' +
           '<h2>Ayuda y reportes</h2>' +
           (state.me
-            ? '<p>Envía un error de la aplicación o reporta una cuenta. Los reportes son privados.</p>' +
+            ? '<p>Envía errores, sugerencias o reportes de cuentas al equipo. Los reportes son privados.</p>' +
               '<form data-report-form>' +
                 '<label class="field"><span>Tipo</span><select id="reportType">' +
                   '<option value="error">Error de la aplicación</option>' +
+                  '<option value="sugerencia">Sugerencia</option>' +
                   '<option value="cuenta">Reportar una cuenta</option>' +
                 '</select></label>' +
                 '<div id="reportTargetWrap" class="hidden">' +
@@ -6304,7 +6757,8 @@
       ? '<p class="muted">Reportado por @' + esc(report.reporter.username) + '</p>'
       : '';
     return '<article class="report-item" data-report-item="' + esc(report.reportId) + '">' +
-      '<strong>' + esc(report.tipo === 'cuenta' ? 'Cuenta' : 'Error de la app') +
+      '<strong>' + esc(report.tipo === 'cuenta' ? 'Cuenta' :
+        (report.tipo === 'sugerencia' ? 'Sugerencia' : 'Error de la app')) +
         ' · ' + esc(report.titulo) + '</strong>' +
       reporter + target + '<p>' + esc(report.detalle) + '</p>' +
       '<small class="muted">' + esc(timeAgo(report.fecha)) + '</small>' +
@@ -9176,6 +9630,25 @@
   //  Delegación de eventos de la vista
   // ─────────────────────────────────────────────────────────────────────
   async function onViewClick(e) {
+    if (e.target.closest('#assistantChatToggle')) {
+      setAssistantChatOpen(!state.chat.open);
+      return;
+    }
+    if (e.target.closest('#assistantChatClose')) {
+      setAssistantChatOpen(false);
+      return;
+    }
+    var chatAction = e.target.closest('[data-chat-action]');
+    if (chatAction) {
+      assistantChatAction(chatAction.dataset.chatAction);
+      return;
+    }
+    var chatAddon = e.target.closest('[data-chat-addon]');
+    if (chatAddon) {
+      setAssistantChatOpen(false);
+      await openAddonDetail(chatAddon.dataset.chatAddon);
+      return;
+    }
     if (e.target.closest('[data-open-auth]')) {
       showAuth();
       return;
@@ -9815,6 +10288,12 @@
   }
 
   async function onViewSubmit(e) {
+    var chatForm = e.target.closest('[data-chat-form]');
+    if (chatForm) {
+      e.preventDefault();
+      await assistantChatSubmit(chatForm);
+      return;
+    }
     var seedForm = e.target.closest('[data-seed-form]');
     if (seedForm) {
       e.preventDefault();
