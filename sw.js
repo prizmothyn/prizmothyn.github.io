@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prizmothyn-v8';
+const CACHE_NAME = 'prizmothyn-v9';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
@@ -21,7 +21,8 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.filter((key) => key !== CACHE_NAME && !key.startsWith('prizmothyn-catalog-'))
+          .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );

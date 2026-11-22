@@ -257,6 +257,7 @@
     position: fixed; inset: 0; z-index: 200;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 14px; background: var(--bg); color: var(--muted); font-size: 14px;
+    text-align: center; white-space: pre-line;
   }
   .boot-screen img {
     display: block;
@@ -2996,7 +2997,7 @@
 
 <div id="bootScreen" class="boot-screen">
   <img src="icon/loading.png" alt="" fetchpriority="high">
-  <span>Cargando Prizmothyn…</span>
+  <span>Cargando catálogos&#10;0 addons</span>
 </div>
 
 <div id="blockedScreen" class="blocked-screen hidden" aria-live="assertive">
@@ -3353,6 +3354,15 @@
   function removeCache(key) {
     try { localStorage.removeItem(key); } catch (e) { /* nada */ }
   }
+
+  // El catálogo manda la señal "ready"/"cached"; hasta entonces la app
+  // puede prepararse en segundo plano, pero la pantalla de carga se mantiene.
+  var catalogBootDone = false;
+  var catalogBootTimer = 0;
+  window.addEventListener('prizmothyn:catalog', function (e) {
+    var d = e.detail || {};
+    if (d.type === 'ready' || d.type === 'cached' || d.type === 'error') finishBoot();
+  });
 
   var CACHE_PROFILE_KEY = 'wl_profile';
   var CACHE_FEED_KEY = 'wl_feed_cache';
@@ -4363,12 +4373,25 @@
     }
   }
 
+  function finishBoot() {
+    catalogBootDone = true;
+    if (catalogBootTimer) {
+      clearTimeout(catalogBootTimer);
+      catalogBootTimer = 0;
+    }
+    hideBoot(true);
+  }
+
   function showBoot() {
     var boot = $('#bootScreen');
     if (boot) boot.classList.remove('hidden');
+    if (!catalogBootTimer) {
+      catalogBootTimer = window.setTimeout(finishBoot, 90000);
+    }
   }
 
-  function hideBoot() {
+  function hideBoot(force) {
+    if (!force && !catalogBootDone) return;
     var boot = $('#bootScreen');
     if (boot) boot.classList.add('hidden');
   }

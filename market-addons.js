@@ -16,6 +16,11 @@
   var WORKER_URL = 'assets/marketplace/worker.js';
   var PAGE_SIZE = 24;
   var FILTER = "(contentType eq 'MarketplaceDurableCatalog_V1.2')";
+  var CATALOG_CACHE_NAME = 'prizmothyn-catalog-v2';
+  var CATALOG_CACHE_URL = location.origin + '/__prizmothyn_catalog__.json';
+  var CATALOG_META_KEY = 'prizmothyn_catalog_meta_v2';
+  var CATALOG_CACHE_VERSION = 2;
+  var SYNC_INTERVAL = 10 * 60 * 1000;
 
   var CATEGORY_MAP = {
     Addon: 'Addons', Mashup: 'Addons', World: 'Mapas', SkinPack: 'Skins',
@@ -28,7 +33,9 @@
     cats: [],
     loading: true, progress: '', error: '',
     token: '', owned: null,
-    details: {}, detailId: '', lastBlobUrl: ''
+    details: {}, detailId: '', lastBlobUrl: '',
+    loadStarted: false, syncing: false, fromCache: false,
+    cacheIndex: new Map(), lastSyncAt: 0, syncNote: ''
   };
 
   var worker = null, workerSeq = 0;
@@ -48,6 +55,125 @@
     return /^https?:\/\//i.test(u) ? esc(u) : '';
   }
   function fmt(n) { var x = Number(n); return isFinite(x) ? x.toLocaleString('es-ES') : '0'; }
+
+  // ── Caché del catálogo y señales de carga ─────────────────────────────
+  function catalogHash(value) {
+    var text = String(value || '');
+    var h1 = 2166136261, h2 = 374761393;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 16777619);
+      h2 = Math.imul(h2 + c, 668265263);
+    }
+    return (h1 >>> 0).toString(36) + '-' + (h2 >>> 0).toString(36);
+  }
+
+  function itemFingerprint(it) {
+    return [
+      it.nombre, it.version, it.creador, it.categoria, it.likes, it.descargas,
+      it.fecha, it.imagen, (it.imagenes || []).join('|'), it.descripcion || '',
+      it.urlDescarga || '', it.tipo || '',
+      (it.variantes || []).map(function (g) { return (g || []).join('|'); }).join('||')
+    ].join('\u001f');
+  }
+
+  function itemHash(it) { return catalogHash(itemFingerprint(it)); }
+
+  function buildIndex(items) {
+    var map = new Map();
+    items.forEach(function (it) { map.set(it.id, itemHash(it)); });
+    return map;
+  }
+
+  function packItems(items) {
+    return items.map(function (it) { return { fp: itemHash(it), it: it }; });
+  }
+
+  function updateBootText(label, count, extra) {
+    var boot = $('#bootScreen');
+    if (!boot) return;
+    var span = boot.querySelector('span');
+    if (!span) return;
+    var line2 = count === null || count === undefined
+      ? (extra || '')
+      : fmt(count) + ' addons' + (extra ? ' · ' + extra : '');
+    span.textContent = label + '\n' + line2;
+  }
+
+  function signal(type, count, extra) {
+    var loadingLabels = { start: 1, progress: 1, cached: 1, ready: 1, error: 1 };
+    updateBootText(
+      loadingLabels[type] ? 'Cargando catálogos' : 'Actualizando catálogos',
+      count,
+      extra && extra.label ? extra.label : ''
+    );
+    try {
+      if (typeof window.CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('prizmothyn:catalog', {
+          detail: { type: type, count: count || 0, extra: extra || {} }
+        }));
+      }
+    } catch (e) { /* el evento es solo informativo */ }
+  }
+
+  function readMeta() {
+    try { return JSON.parse(localStorage.getItem(CATALOG_META_KEY) || 'null'); }
+    catch (e) { return null; }
+  }
+
+  async function readCatalogCache() {
+    try {
+      var meta = readMeta();
+      if (!meta || meta.v !== CATALOG_CACHE_VERSION || !meta.count) return null;
+      if (!('caches' in window)) return null;
+      var cache = await caches.open(CATALOG_CACHE_NAME);
+      var res = await cache.match(CATALOG_CACHE_URL);
+      if (!res || !res.ok) return null;
+      var payload = await res.json();
+      if (!payload || payload.v !== CATALOG_CACHE_VERSION || !Array.isArray(payload.items)) return null;
+      if (payload.items.length !== meta.count) return null;
+      var items = payload.items.map(function (entry) { return entry.it; }).filter(Boolean);
+      if (!items.length) return null;
+      return { items: items, index: buildIndex(items), savedAt: payload.savedAt || meta.savedAt || 0 };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function writeCatalogCache(items) {
+    var meta = {
+      v: CATALOG_CACHE_VERSION,
+      count: items.length,
+      app: items.filter(function (i) { return i.source === 'app'; }).length,
+      market: items.filter(function (i) { return i.source === 'market'; }).length,
+      savedAt: Date.now()
+    };
+    var payload = { v: CATALOG_CACHE_VERSION, savedAt: meta.savedAt, items: packItems(items) };
+    try {
+      if ('caches' in window) {
+        var cache = await caches.open(CATALOG_CACHE_NAME);
+        await cache.put(CATALOG_CACHE_URL, new Response(JSON.stringify(payload), {
+          headers: { 'Content-Type': 'application/json' }
+        }));
+      }
+    } catch (e) { /* sin espacio o modo privado: seguimos con los metadatos */ }
+    try { localStorage.setItem(CATALOG_META_KEY, JSON.stringify(meta)); }
+    catch (e) { /* sin espacio */ }
+    return meta;
+  }
+
+  async function cleanOldCatalogCache() {
+    try {
+      if ('caches' in window) {
+        var keys = await caches.keys();
+        await Promise.all(keys.filter(function (key) {
+          return key.indexOf('prizmothyn-catalog-') === 0 && key !== CATALOG_CACHE_NAME;
+        }).map(function (key) { return caches.delete(key); }));
+      }
+      localStorage.removeItem('prizmothyn_catalog_meta_v1');
+    } catch (e) { /* nada que limpiar */ }
+  }
+
   function dateLabel(v) {
     if (!v) return '';
     var d = new Date(v);
@@ -117,11 +243,10 @@
     return j.data;
   }
 
-  async function loadAppItems() {
-    state.progress = 'Cargando contenido…'; render();
+  async function fetchAppItems(onProgress) {
     var data = await api('getAddonCategoryLists');
-    (data.addons || []).forEach(function (a) {
-      state.all.push({
+    var out = (data.addons || []).map(function (a) {
+      return {
         id: 'app:' + a.id,
         source: 'app',
         rawId: a.id,
@@ -133,12 +258,13 @@
         descargas: Number(a.descargas) || 0,
         fecha: a.fecha || '',
         imagen: safeUrl(a.imagen),
-        imagenes: [],
-        descripcion: '',
-        urlDescarga: ''
-      });
+        imagenes: (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean),
+        descripcion: a.descripcion || '',
+        urlDescarga: safeUrl(a.urlDescarga)
+      };
     });
-    state.progress = 'Contenido cargado: ' + fmt(state.all.length) + ' publicaciones'; render();
+    if (onProgress) onProgress(out.length);
+    return out;
   }
 
   // ── Marketplace (PlayFab) ──────────────────────────────────────────────
@@ -234,13 +360,13 @@
       tipo: tipo
     };
   }
-  async function loadMarketItems() {
-    state.progress = 'Cargando contenido…'; render();
+  async function fetchMarketItems(onProgress) {
+    var out = [];
     var token = await auth();
     await loadKeys();
-    var skip = 0, total = Infinity, added = 0;
+    var skip = 0, total = Infinity;
     while (skip < Math.min(total, 10000)) {
-      state.progress = 'Cargando contenido… ' + fmt(added) + ' elementos'; render();
+      state.progress = 'Cargando contenido… ' + fmt(out.length) + ' elementos';
       var data = await pf('/Catalog/Search', {
         count: true, filter: FILTER, scid: SCID, select: 'contents, images',
         top: 300, skip: skip, orderBy: 'startDate DESC'
@@ -250,29 +376,133 @@
       items.forEach(function (raw) {
         var item = normalizeMarket(raw);
         if (item.tipo === 'Persona' || !available(item)) return;
-        state.all.push(item); added++;
+        out.push(item);
       });
+      if (onProgress) onProgress(out.length);
       skip += 300;
       if (items.length < 300) break;
     }
+    return out;
   }
 
   // ── Carga y presentación ───────────────────────────────────────────────
+  function catalogCategories(items) {
+    return (items || []).map(function (i) { return i.categoria; })
+      .filter(function (v, i, a) { return v && a.indexOf(v) === i; }).sort();
+  }
+
+  function setSyncNote(text) {
+    state.syncNote = text || '';
+    render();
+  }
+
+  function commit(items, fromCache, savedAt) {
+    shuffle(items);
+    state.all = items;
+    state.cats = catalogCategories(items);
+    state.cacheIndex = buildIndex(items);
+    state.fromCache = !!fromCache;
+    state.lastSyncAt = savedAt || Date.now();
+    state.loading = false;
+    state.progress = '';
+    render();
+  }
+
   async function loadAll() {
-    if (!state.loading) return;
+    if (state.loadStarted) return;
+    state.loadStarted = true;
     state.error = '';
+    signal('start', 0);
+
+    // Segunda visita: mostramos el catálogo guardado de inmediato y
+    // comprobamos cambios en segundo plano.
+    var cached = await readCatalogCache();
+    if (cached) {
+      commit(cached.items, true, cached.savedAt);
+      signal('cached', state.all.length);
+      syncCatalog();
+      return;
+    }
+
+    state.loading = true;
+    render();
     try {
-      await loadAppItems();
-      await loadMarketItems();
-      shuffle(state.all);
-      state.cats = state.all.map(function (i) { return i.categoria; })
-        .filter(function (v, i, a) { return v && a.indexOf(v) === i; }).sort();
+      var appItems = await fetchAppItems(function (n) { signal('progress', n); });
+      var marketItems = await fetchMarketItems(function (n) { signal('progress', appItems.length + n); });
+      var items = appItems.concat(marketItems);
+      commit(items, false, Date.now());
+      await writeCatalogCache(items);
+      setSyncNote('Catálogo guardado en caché');
+      signal('ready', items.length);
     } catch (e) {
       state.error = (e && e.message) || 'No se pudo cargar el catálogo';
-    } finally {
       state.loading = false;
       state.progress = '';
       render();
+      signal('error', null, { label: 'No se pudo cargar' });
+    } finally {
+      state.loading = false;
+      state.progress = '';
+    }
+  }
+
+  // Sincronización incremental: solo sustituye lo que cambió y añade lo nuevo.
+  async function syncCatalog() {
+    if (state.syncing || state.loading || !state.loadStarted) return;
+    state.syncing = true;
+    setSyncNote('Comprobando actualizaciones del catálogo…');
+    signal('sync-start', 0);
+    try {
+      var appItems = await fetchAppItems();
+      var marketItems = await fetchMarketItems();
+      var fresh = appItems.concat(marketItems);
+      var freshIndex = buildIndex(fresh);
+      var currentIndex = (state.cacheIndex && state.cacheIndex.size)
+        ? state.cacheIndex : buildIndex(state.all);
+
+      var added = [], updated = [], removed = [];
+      fresh.forEach(function (it) {
+        var oldHash = currentIndex.get(it.id);
+        if (!oldHash) added.push(it);
+        else if (oldHash !== itemHash(it)) updated.push(it);
+      });
+      state.all.forEach(function (it) {
+        if (!freshIndex.has(it.id)) removed.push(it.id);
+      });
+
+      var total = added.length + updated.length;
+      if (!total && !removed.length) {
+        state.lastSyncAt = Date.now();
+        setSyncNote('Catálogo al día');
+        signal('sync-done', 0, { label: 'sin cambios' });
+        return;
+      }
+
+      // Si cambió un addon normal, descartamos su ficha guardada para que no
+      // se muestre una descripción o enlace de descarga anteriores.
+      updated.forEach(function (it) {
+        if (it.source === 'app') delete state.details[it.id];
+      });
+
+      var byId = new Map();
+      state.all.forEach(function (it) { byId.set(it.id, it); });
+      added.concat(updated).forEach(function (it) { byId.set(it.id, it); });
+      removed.forEach(function (id) { byId.delete(id); });
+      var merged = Array.from(byId.values());
+
+      commit(merged, false, Date.now());
+      await writeCatalogCache(merged);
+
+      var note = 'Actualizado: ' + fmt(added.length) + ' nuevos · ' +
+        fmt(updated.length) + ' actualizados' +
+        (removed.length ? ' · ' + fmt(removed.length) + ' eliminados' : '');
+      setSyncNote(note);
+      signal('sync-done', total, { label: 'nuevos o actualizados' });
+    } catch (e) {
+      setSyncNote('No se pudo actualizar: ' + ((e && e.message) || 'error de conexión'));
+      signal('sync-error', 0, { label: 'sin cambios' });
+    } finally {
+      state.syncing = false;
     }
   }
 
@@ -358,7 +588,7 @@
       footer.innerHTML = '';
       var sum = $('#uSummary'), info = $('#uInfo');
       if (sum) sum.textContent = 'Cargando contenido…';
-      if (info) info.textContent = state.progress;
+      if (info) info.textContent = state.progress + (state.syncNote ? ' · ' + state.syncNote : '');
       return;
     }
 
@@ -382,7 +612,8 @@
 
     $('#uSummary').textContent = fmt(state.all.length) + ' contenidos en un solo catálogo';
     $('#uInfo').textContent = fmt(state.visible.length) + ' resultados · ' +
-      (slice.length ? 'mostrando ' + (start + 1) + '–' + (start + slice.length) : 'sin resultados');
+      (slice.length ? 'mostrando ' + (start + 1) + '–' + (start + slice.length) : 'sin resultados') +
+      (state.syncNote ? ' · ' + state.syncNote : '');
   }
 
   // ── Ficha única ────────────────────────────────────────────────────────
@@ -413,15 +644,23 @@
     $('#uBody').innerHTML = '<div class="addon-detail-loading"><div class="spinner"></div></div>';
 
     if (it.source === 'app' && !state.details[id]) {
+      // El catálogo guardado ya trae estos datos, así que el detalle funciona
+      // incluso sin conexión; luego se refina con la ficha completa.
+      state.details[id] = {
+        descripcion: it.descripcion || '',
+        imagenes: (it.imagenes || []).slice(),
+        urlDescarga: it.urlDescarga || ''
+      };
       try {
         var data = await api('getAddon', { id: it.rawId });
         var a = data.addon || {};
+        var apiImgs = (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean);
         state.details[id] = {
-          descripcion: a.descripcion || '',
-          imagenes: (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean),
-          urlDescarga: safeUrl(a.urlDescarga)
+          descripcion: a.descripcion || it.descripcion || '',
+          imagenes: apiImgs.length ? apiImgs : (it.imagenes || []).slice(),
+          urlDescarga: safeUrl(a.urlDescarga) || it.urlDescarga || ''
         };
-      } catch (e) { state.details[id] = { descripcion: '', imagenes: [], urlDescarga: '' }; }
+      } catch (e) { /* conservamos los datos del catálogo en caché */ }
     }
     if (state.detailId !== id) return;
     var d = it.source === 'app' ? state.details[id] : it;
@@ -620,7 +859,10 @@
     var timer = setInterval(function () {
       if ($('.addons-page') && $('#addonsGrid')) {
         clearInterval(timer);
-        ensureToolbar(); render(); loadAll();
+        ensureToolbar(); render();
+        cleanOldCatalogCache();
+        loadAll();
+        window.setInterval(syncCatalog, SYNC_INTERVAL);
       } else if (++tries > 80) clearInterval(timer);
     }, 150);
   }
