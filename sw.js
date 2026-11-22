@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prizmothyn-v3';
+const CACHE_NAME = 'prizmothyn-v4';
 const APP_SHELL = [
   './index.html',
   './manifest.json',

@@ -11,6 +11,8 @@
   var PF = 'https://20ca2.playfabapi.com';
   var SCID = '4fc10100-5f7a-4470-899b-280835760c07';
   var KEYS_URL = 'https://toolcoin.site/api/keys.php';
+  // Proxy del propio Toolcoin: algunos archivos de xboxlive no permiten CORS directo.
+  var DOWNLOAD_PROXY = 'https://toolcoin.site/api/proxy.php';
   var WORKER_URL = 'assets/marketplace/worker.js';
   var PAGE_SIZE = 24;
   var FILTER = "(contentType eq 'MarketplaceDurableCatalog_V1.2')";
@@ -449,12 +451,27 @@
       await loadKeys();
       var urls = (it.variantes && it.variantes[0]) || [];
       if (!urls.length) throw new Error('Sin archivos de descarga');
-      status.textContent = 'Descargando y descifrando…';
-      var res = await callWorker('DOWNLOAD_AND_PROCESS', {
-        downloadUrls: urls, title: it.nombre, variantLabel: '', proxyPrefix: ''
-      }, [], function (p) {
-        status.textContent = (p.message || p.stage || 'Procesando…') + (p.percent ? ' (' + Math.round(p.percent) + '%)' : '');
-      });
+      var res = null, lastError = null;
+      // Los archivos de xboxlive no envían cabeceras CORS: esos van directos al proxy.
+      // El resto se intenta en directo y, si falla, se repite por el proxy.
+      var needsProxy = urls.some(function (u) { return /xboxlive\.com/i.test(u); });
+      var prefixes = needsProxy ? [DOWNLOAD_PROXY] : ['', DOWNLOAD_PROXY];
+      for (var attempt = 0; attempt < prefixes.length; attempt++) {
+        status.textContent = (attempt && !needsProxy)
+          ? 'Conexión directa bloqueada, usando proxy…'
+          : 'Descargando y descifrando…';
+        try {
+          res = await callWorker('DOWNLOAD_AND_PROCESS', {
+            downloadUrls: urls, title: it.nombre, variantLabel: '', proxyPrefix: prefixes[attempt]
+          }, [], function (p) {
+            status.textContent = (p.message || p.stage || 'Procesando…') + (p.percent ? ' (' + Math.round(p.percent) + '%)' : '');
+          });
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (!res) throw lastError || new Error('No se pudo descargar el archivo');
       var blob = new Blob([res.payload.data], { type: 'application/octet-stream' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
@@ -463,7 +480,10 @@
       setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
       status.textContent = 'Descarga lista: ' + a.download;
     } catch (e) {
-      status.textContent = 'Error: ' + ((e && e.message) || 'No se pudo descargar');
+      var msg = (e && e.message) || '';
+      status.textContent = /fetch|network|cors|failed/i.test(msg)
+        ? 'No se pudo descargar el archivo. Revisa tu conexión e inténtalo de nuevo.'
+        : 'Error: ' + (msg || 'No se pudo descargar');
     } finally { btn.disabled = false; }
   }
 
