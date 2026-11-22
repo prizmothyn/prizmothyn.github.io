@@ -2,10 +2,10 @@
   "id": "./",
   "name": "Prizmothyn",
   "short_name": "Prizmothyn",
-  "description": "Comunidad y catálogo de addons para Minecraft Bedrock.",
+  "description": "Catálogo de addons, mapas, skins y servidores para Minecraft Bedrock, con comunidad y descargas.",
   "lang": "es",
   "dir": "ltr",
-  "start_url": "./index.html",
+  "start_url": "./index.html#addons",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
@@ -13,6 +13,30 @@
   "theme_color": "#087a55",
   "orientation": "portrait-primary",
   "categories": ["social", "games", "utilities"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Catálogo",
+      "short_name": "Catálogo",
+      "description": "Abrir el catálogo de addons",
+      "url": "./index.html#addons",
+      "icons": [{ "src": "icon/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Buscar addons",
+      "short_name": "Buscar",
+      "description": "Buscar en todo el catálogo",
+      "url": "./index.html#search",
+      "icons": [{ "src": "icon/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Servidores",
+      "short_name": "Servidores",
+      "description": "Ver servidores de la comunidad",
+      "url": "./index.html#servers",
+      "icons": [{ "src": "icon/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "icon/icon-192.png",

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3LVCX19L6W"></script>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-M5LGKMVJ"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-3LVCX19L6W');
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -427,15 +426,23 @@
     backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--line);
   }
-  .whatsapp-invite {
+  .community-invites {
     position: fixed;
     top: 98px;
     right: clamp(14px, 4vw, 40px);
     z-index: 80;
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(460px, calc(100vw - 28px));
+    pointer-events: none;
+  }
+  .community-invites > * { pointer-events: auto; }
+  .whatsapp-invite {
+    display: flex;
     align-items: center;
     gap: 14px;
-    width: min(460px, calc(100vw - 28px));
+    width: 100%;
     padding: 16px;
     border: 1px solid rgba(37, 211, 102, .35);
     border-radius: 18px;
@@ -443,6 +450,7 @@
     box-shadow: var(--shadow);
     animation: whatsapp-invite-in .48s cubic-bezier(.2, .8, .2, 1) both;
   }
+  .discord-invite { border-color: rgba(88, 101, 242, .45); }
   @keyframes whatsapp-invite-in {
     from { opacity: 0; transform: translateY(-24px); }
     to { opacity: 1; transform: translateY(0); }
@@ -484,6 +492,9 @@
     color: var(--muted);
   }
   .whatsapp-invite-close:hover { background: var(--line); color: var(--text); }
+  .discord-invite-icon { background: #5865f2; }
+  .discord-invite-link { color: #8ea1ff; }
+  .discord-invite-link:hover { color: #aab6ff; }
   .assistant-chat-toggle {
     position: fixed;
     left: max(20px, env(safe-area-inset-left));
@@ -588,7 +599,8 @@
     }
   }
   @media (max-width: 520px) {
-    .whatsapp-invite { top: 88px; right: 12px; gap: 10px; padding: 13px; }
+    .community-invites { top: 88px; right: 12px; width: calc(100vw - 24px); }
+    .whatsapp-invite { gap: 10px; padding: 13px; }
     .whatsapp-invite-icon { width: 40px; height: 40px; border-radius: 13px; }
     .whatsapp-invite-copy strong { font-size: 14px; }
     .whatsapp-invite-copy p { font-size: 12px; }
@@ -3145,22 +3157,40 @@
       <button class="avatar-btn" id="myProfileBtn" type="button" title="Mi perfil" aria-label="Abrir mi perfil"><img id="topAvatar" class="avatar md" alt=""></button>
     </div>
   </header>
-  <aside id="whatsappInvite" class="whatsapp-invite hidden" role="region" aria-label="Canal de WhatsApp" aria-live="polite">
-    <span class="whatsapp-invite-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="25" height="25" fill="none">
-        <path d="M20 11.7a8 8 0 0 1-11.8 7L4 20l1.3-4A8 8 0 1 1 20 11.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M9 8.5c.3-.5.6-.5.9-.5h.3c.2 0 .4.1.5.4l.7 1.7c.1.2.1.4-.1.6l-.6.7c-.2.2-.2.4-.1.6.4.7 1 1.3 1.7 1.7.2.1.4.1.6-.1l.7-.7c.2-.2.4-.2.6-.1l1.6.8c.3.1.4.3.4.5 0 .3-.1.8-.5 1.1-.4.4-1 .6-1.6.5-1.1-.2-2.2-.8-3.3-1.8-1-.9-1.7-2.1-1.9-3.1-.1-.8.1-1.4.5-1.8Z" fill="currentColor"/>
-      </svg>
-    </span>
-    <div class="whatsapp-invite-copy">
-      <strong>Únete a nuestro canal de WhatsApp</strong>
-      <p>Entérate de todo y no te pierdas las novedades.</p>
-      <a class="whatsapp-invite-link" href="https://whatsapp.com/channel/0029VbEBUiSCHDynxetvd23p" target="_blank" rel="noopener noreferrer">
-        Unirme al canal <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-    <button id="whatsappInviteClose" class="whatsapp-invite-close" type="button" aria-label="Cerrar invitación" title="Cerrar">✕</button>
-  </aside>
+  <div id="communityInvites" class="community-invites" aria-live="polite">
+    <aside id="whatsappInvite" class="whatsapp-invite hidden" role="region" aria-label="Canal de WhatsApp">
+      <span class="whatsapp-invite-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="25" height="25" fill="none">
+          <path d="M20 11.7a8 8 0 0 1-11.8 7L4 20l1.3-4A8 8 0 1 1 20 11.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 8.5c.3-.5.6-.5.9-.5h.3c.2 0 .4.1.5.4l.7 1.7c.1.2.1.4-.1.6l-.6.7c-.2.2-.2.4-.1.6.4.7 1 1.3 1.7 1.7.2.1.4.1.6-.1l.7-.7c.2-.2.4-.2.6-.1l1.6.8c.3.1.4.3.4.5 0 .3-.1.8-.5 1.1-.4.4-1 .6-1.6.5-1.1-.2-2.2-.8-3.3-1.8-1-.9-1.7-2.1-1.9-3.1-.1-.8.1-1.4.5-1.8Z" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="whatsapp-invite-copy">
+        <strong>Únete a nuestro canal de WhatsApp</strong>
+        <p>Entérate de todo y no te pierdas las novedades.</p>
+        <a class="whatsapp-invite-link" href="https://whatsapp.com/channel/0029VbEBUiSCHDynxetvd23p" target="_blank" rel="noopener noreferrer">
+          Unirme al canal <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <button id="whatsappInviteClose" class="whatsapp-invite-close" type="button" aria-label="Cerrar invitación" title="Cerrar">✕</button>
+    </aside>
+
+    <aside id="discordInvite" class="whatsapp-invite discord-invite hidden" role="region" aria-label="Comunidad de Discord">
+      <span class="whatsapp-invite-icon discord-invite-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="25" height="25" fill="currentColor">
+          <path d="M19.3 5.4A18.8 18.8 0 0 0 14.6 4l-.6 1.2a14 14 0 0 0-4 0L9.4 4a18.8 18.8 0 0 0-4.7 1.4C2.3 9.2 1.5 13 1.9 16.7a19 19 0 0 0 5.7 2.9l1.2-2a12 12 0 0 1-1.9-.9l.5-.4a13.4 13.4 0 0 0 11.2 0l.5.4c-.6.4-1.2.7-1.9.9l1.2 2a19 19 0 0 0 5.7-2.9c.5-4.3-.8-8.1-3.8-11.3ZM8.7 14.7c-1.1 0-2-1-2-2.3s.9-2.3 2-2.3 2 1 2 2.3-.9 2.3-2 2.3Zm6.6 0c-1.1 0-2-1-2-2.3s.9-2.3 2-2.3 2 1 2 2.3-.9 2.3-2 2.3Z"/>
+        </svg>
+      </span>
+      <div class="whatsapp-invite-copy">
+        <strong>Únete a nuestra comunidad de Discord</strong>
+        <p>Charla con la comunidad y entérate de todo.</p>
+        <a class="whatsapp-invite-link discord-invite-link" href="https://discord.gg/tTAuKV5fzR" target="_blank" rel="noopener noreferrer">
+          Unirme a Discord <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <button id="discordInviteClose" class="whatsapp-invite-close" type="button" aria-label="Cerrar invitación" title="Cerrar">✕</button>
+    </aside>
+  </div>
 
   <main class="layout">
     <aside class="left">
@@ -3544,6 +3574,8 @@
   var whatsappInviteTimer = null;
   var whatsappInviteShown = false;
   var whatsappInviteDismissed = false;
+  var discordInviteShown = false;
+  var discordInviteDismissed = false;
   var socialBarLoadTimer = null;
   var socialBarLoadStarted = false;
   var socialBarLoadFailed = false;
@@ -3948,10 +3980,18 @@
         var pair = part.split('=');
         var key = decodeURIComponent(pair[0] || '');
         var value = pair.length > 1 ? decodeURIComponent(pair.slice(1).join('=')) : '';
-        if (key) params[key] = value;
+        params[key] = value;
       });
     }
     var userId = params.userId || '';
+    // #addon?=Nombre%20del%20addon&id=... permite historial y links directos.
+    if (path === 'addon' && Object.prototype.hasOwnProperty.call(params, '')) {
+      return {
+        view: 'unifiedDetail',
+        addonName: params[''],
+        addonId: params.id || ''
+      };
+    }
     if (path.indexOf('addon/') === 0) {
       return {
         view: 'addonDetail',
@@ -4010,6 +4050,15 @@
   function handleHashRoute(force) {
     if (!force && state.routeLock) return;
     var route = parseHashRoute(window.location.hash);
+    if (route.view === 'unifiedDetail') {
+      if (!$('#addonsGrid') || !$('.addons-page')) {
+        navigate('addons', { skipHash: true });
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('prizmothyn:addon-route', { detail: route }));
+      } catch (e) { /* el catálogo unificado puede no estar listo aún */ }
+      return;
+    }
     if (route.view === 'addonDetail') {
       if (!route.addonId) {
         history.replaceState(null, '', '#addons');
@@ -4039,6 +4088,25 @@
     if (!force && state.view === targetView &&
         String(state.profileUserId || '') === String(targetUserId || '')) return;
     return navigate(targetView, { userId: targetUserId, skipHash: true });
+  }
+
+  // Idioma SOLO para descripciones. El resto de la interfaz no se traduce.
+  var DESCRIPTION_LANG_KEY = 'wl_description_lang';
+  function readDescriptionLang() {
+    try { return localStorage.getItem(DESCRIPTION_LANG_KEY) === 'en' ? 'en' : 'es'; }
+    catch (e) { return 'es'; }
+  }
+  function setDescriptionLang(lang) {
+    lang = lang === 'en' ? 'en' : 'es';
+    try { localStorage.setItem(DESCRIPTION_LANG_KEY, lang); } catch (e) { /* modo privado */ }
+    try {
+      if (typeof window.CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('prizmothyn:description-lang', {
+          detail: { lang: lang }
+        }));
+      }
+    } catch (e) { /* el evento es solo informativo */ }
+    return lang;
   }
 
   var toastTimer = null;
@@ -4521,14 +4589,23 @@
   }
 
   function scheduleWhatsAppInvite_() {
-    if (whatsappInviteTimer !== null || whatsappInviteShown || whatsappInviteDismissed) return;
+    var waDone = whatsappInviteShown || whatsappInviteDismissed;
+    var dcDone = discordInviteShown || discordInviteDismissed;
+    if (whatsappInviteTimer !== null || (waDone && dcDone)) return;
     whatsappInviteTimer = window.setTimeout(function () {
       whatsappInviteTimer = null;
       var app = $('#appScreen');
-      var invite = $('#whatsappInvite');
-      if (!app || app.classList.contains('hidden') || !invite || whatsappInviteDismissed) return;
-      invite.classList.remove('hidden');
-      whatsappInviteShown = true;
+      if (!app || app.classList.contains('hidden')) return;
+      var wa = $('#whatsappInvite');
+      if (wa && !whatsappInviteDismissed && !whatsappInviteShown) {
+        wa.classList.remove('hidden');
+        whatsappInviteShown = true;
+      }
+      var dc = $('#discordInvite');
+      if (dc && !discordInviteDismissed && !discordInviteShown) {
+        dc.classList.remove('hidden');
+        discordInviteShown = true;
+      }
     }, 2000);
   }
 
@@ -5100,6 +5177,10 @@
     $('#whatsappInviteClose').addEventListener('click', function () {
       $('#whatsappInvite').classList.add('hidden');
       whatsappInviteDismissed = true;
+    });
+    $('#discordInviteClose').addEventListener('click', function () {
+      $('#discordInvite').classList.add('hidden');
+      discordInviteDismissed = true;
     });
     $('#menuBtn').addEventListener('click', openDrawer);
     $('#sideCloseBtn').addEventListener('click', closeDrawer);
@@ -7623,6 +7704,18 @@
           '</div>' +
         '</section>' +
         '<section class="card settings-card">' +
+          '<h2>Idioma de las descripciones</h2>' +
+          '<p>Elige en qué idioma quieres leer las descripciones de los addons. ' +
+            'Solo afecta a las descripciones; el resto de la app se queda igual.</p>' +
+          '<label class="settings-row" for="descriptionLang">' +
+            '<span class="settings-row-label"><strong>Descripciones</strong>' +
+              '<span>Español o inglés en las fichas de contenido</span></span>' +
+            '<select id="descriptionLang" class="settings-select">' +
+              '<option value="es">Español</option><option value="en">English</option>' +
+            '</select>' +
+          '</label>' +
+        '</section>' +
+        '<section class="card settings-card">' +
           '<h2>Cuenta</h2>' +
           (state.me
             ? '<p>Actualiza los datos visibles de tu perfil.</p>' +
@@ -7681,6 +7774,16 @@
         if (input.type !== 'color' || event.type === 'change') persistThemePreferences();
       });
     });
+    var descLangSelect = $('#descriptionLang');
+    if (descLangSelect) {
+      descLangSelect.value = readDescriptionLang();
+      descLangSelect.addEventListener('change', function (e) {
+        var lang = setDescriptionLang(e.target.value);
+        toast(lang === 'es'
+          ? 'Descripciones en español.'
+          : 'Descriptions in English.');
+      });
+    }
     $('#resetThemeBtn').addEventListener('click', function () {
       themePrefs = Object.assign({}, THEME_DEFAULTS);
       applyThemePreferences();
@@ -9328,7 +9431,8 @@
       ? '<div class="addon-description">' + esc(addon.descripcion) + '</div>'
       : '<p class="muted">Sin descripción disponible.</p>';
     var translated = addon.descripcionTraducida
-      ? '<span class="addon-translated">Descripción traducida automáticamente</span>'
+      ? '<span class="addon-translated">' + (readDescriptionLang() === 'en'
+          ? 'Translated to English' : 'Descripción traducida automáticamente') + '</span>'
       : '';
     var collections = state.addons.library && state.addons.library.colecciones || [];
     var firstCollection = collections[0];
@@ -9498,7 +9602,7 @@
     var closeBtn = $('#closeAddonBtn');
     if (closeBtn) closeBtn.focus();
     try {
-      var data = await api('getAddon', { id: id });
+      var data = await api('getAddon', { id: id, lang: readDescriptionLang() });
       if (seq !== state.addons.detailSeq) return;
       if (state.me && !state.addons.library) {
         try {

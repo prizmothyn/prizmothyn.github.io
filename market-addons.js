@@ -21,6 +21,9 @@
   var CATALOG_META_KEY = 'prizmothyn_catalog_meta_v2';
   var CATALOG_CACHE_VERSION = 2;
   var SYNC_INTERVAL = 10 * 60 * 1000;
+  var AD_EVERY = 15;
+  var AD_KEY = '8dbb602ebcae476bccc44b9d9dae9e97';
+  var AD_SCRIPT_URL = 'https://bauval.org/22/' + AD_KEY;
 
   var CATEGORY_MAP = {
     Addon: 'Addons', Mashup: 'Addons', World: 'Mapas', SkinPack: 'Skins',
@@ -35,14 +38,23 @@
     token: '', owned: null,
     details: {}, detailId: '', lastBlobUrl: '',
     loadStarted: false, syncing: false, fromCache: false,
-    cacheIndex: new Map(), lastSyncAt: 0, syncNote: ''
+    cacheIndex: new Map(), lastSyncAt: 0, syncNote: '',
+    detailPushed: false, pendingRoute: null,
+    descriptionLang: 'es', translations: new Map(), detailSeq: 0
   };
+  state.descriptionLang = readDescriptionLang();
 
   var worker = null, workerSeq = 0;
   var pending = new Map();
 
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+
+  // Preferencia compartida con Ajustes: solo idioma de descripciones.
+  function readDescriptionLang() {
+    try { return localStorage.getItem('wl_description_lang') === 'en' ? 'en' : 'es'; }
+    catch (e) { return 'es'; }
+  }
 
   function esc(v) {
     if (v === null || v === undefined) return '';
@@ -68,6 +80,8 @@
     return (h1 >>> 0).toString(36) + '-' + (h2 >>> 0).toString(36);
   }
 
+  // La descripción original ya entra en la firma, así que un cambio en
+  // PlayFab se detecta en la sync. descripcionI18n NO entra: es derivada.
   function itemFingerprint(it) {
     return [
       it.nombre, it.version, it.creador, it.categoria, it.likes, it.descargas,
@@ -184,6 +198,32 @@
     var keys = Object.keys(v);
     return v.neutral || v.NEUTRAL || v['en-US'] || (keys.length ? String(v[keys[0]]) : '');
   }
+
+  // Descripciones por idioma: { en: {texto, traducido}, es: {texto, traducido} }.
+  function descVariant(i18n, lang) {
+    if (!i18n) return null;
+    var v = i18n[lang];
+    if (v && typeof v === 'object') return v;
+    if (typeof v === 'string') return { texto: v, traducido: false };
+    return null;
+  }
+  function setDescVariant(i18n, lang, texto, traducido) {
+    if (!i18n) return null;
+    i18n[lang] = { texto: String(texto || ''), traducido: !!traducido };
+    return i18n[lang];
+  }
+  function descFor(i18n, lang, fallback) {
+    var v = descVariant(i18n, lang);
+    if (v && v.texto) return v;
+    if (lang === 'es') {
+      var original = descVariant(i18n, 'en');
+      if (original && original.texto) return original;
+    }
+    return { texto: String(fallback || ''), traducido: false };
+  }
+  function baseI18n(text) {
+    return { en: { texto: String(text || ''), traducido: false } };
+  }
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -243,6 +283,24 @@
     return j.data;
   }
 
+  // Traducción bajo demanda, cacheada en memoria y en el Apps Script.
+  // La usan sobre todo los addons del Marketplace (texto original en PlayFab).
+  async function translateDescriptionText(text, lang) {
+    var original = String(text || '');
+    if (!original.trim()) return { texto: '', traducido: false };
+    if (lang !== 'en') lang = 'es';
+    if (lang === 'en') return { texto: original, traducido: false };
+    var key = catalogHash(lang + '\u001f' + original);
+    if (state.translations.has(key)) return state.translations.get(key);
+    var result = { texto: original, traducido: false };
+    try {
+      var data = await api('translateDescription', { text: original, to: lang });
+      result = { texto: data.texto || original, traducido: !!data.traducido };
+      if (result.texto) state.translations.set(key, result);
+    } catch (e) { /* sin conexión: mostramos el texto original */ }
+    return result;
+  }
+
   async function fetchAppItems(onProgress) {
     var data = await api('getAddonCategoryLists');
     var out = (data.addons || []).map(function (a) {
@@ -260,6 +318,7 @@
         imagen: safeUrl(a.imagen),
         imagenes: (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean),
         descripcion: a.descripcion || '',
+        descripcionI18n: baseI18n(a.descripcion || ''),
         urlDescarga: safeUrl(a.urlDescarga)
       };
     });
@@ -343,6 +402,7 @@
       Array.from(groups.values()).forEach(function (u) { variants.push(u); });
     }
     var tipo = typeOf(raw);
+    var descripcionOriginal = localText(raw.Description);
     return {
       id: 'market:' + raw.Id, source: 'market', rawId: raw.Id,
       nombre: localText(raw.Title) || 'Sin título',
@@ -354,7 +414,8 @@
       fecha: raw.CreationDate || '',
       imagen: imgs[0] || '',
       imagenes: imgs,
-      descripcion: localText(raw.Description),
+      descripcion: descripcionOriginal,
+      descripcionI18n: baseI18n(descripcionOriginal),
       urlDescarga: '',
       variantes: variants,
       tipo: tipo
@@ -406,6 +467,11 @@
     state.loading = false;
     state.progress = '';
     render();
+    if (state.pendingRoute) {
+      var pendingRoute = state.pendingRoute;
+      state.pendingRoute = null;
+      handleCatalogRoute(pendingRoute);
+    }
   }
 
   async function loadAll() {
@@ -562,6 +628,37 @@
       '</button></article>';
   }
 
+  function createInlineAdSlot(position, listKey) {
+    var slot = document.createElement('aside');
+    slot.className = 'addon-inline-ad';
+    slot.dataset.addonAdPosition = String(position);
+    slot.dataset.addonAdList = listKey;
+    slot.setAttribute('aria-label', 'Publicidad');
+    slot.innerHTML = '<p class="addon-inline-ad-label">Publicidad</p>' +
+      '<div class="addon-banner-frame"></div>';
+    return slot;
+  }
+
+  function loadInlineAd(slot) {
+    if (!slot || slot.dataset.addonAdLoaded === 'true') return;
+    var frame = slot.querySelector('.addon-banner-frame');
+    if (!frame) return;
+    slot.dataset.addonAdLoaded = 'true';
+    window.atOptions = {
+      key: AD_KEY,
+      format: 'iframe',
+      height: 250,
+      width: 300,
+      params: {}
+    };
+    var script = document.createElement('script');
+    script.async = false;
+    script.setAttribute('data-cfasync', 'false');
+    script.src = AD_SCRIPT_URL;
+    script.onerror = function () { slot.classList.add('hidden'); };
+    frame.appendChild(script);
+  }
+
   function render() {
     var page = $('.addons-page');
     if (!page || !ensureToolbar()) return;
@@ -581,6 +678,7 @@
     }
 
     var grid = $('#addonsGrid'), footer = $('#addonsFooter');
+    var adListKey = state.q + '|' + state.cat + '|' + state.page;
     if (state.loading || state.error) {
       grid.innerHTML = state.error
         ? '<div class="addon-empty" style="grid-column:1/-1"><p>' + esc(state.error) + '</p></div>'
@@ -595,8 +693,27 @@
     applyFilters();
     var start = state.page * PAGE_SIZE;
     var slice = state.visible.slice(start, start + PAGE_SIZE);
-    grid.innerHTML = slice.length ? slice.map(cardHTML).join('')
-      : '<div class="addon-empty" style="grid-column:1/-1">No hay resultados.</div>';
+    if (!slice.length) {
+      grid.innerHTML = '<div class="addon-empty" style="grid-column:1/-1">No hay resultados.</div>';
+    } else {
+      // Reutilizamos los slots ya cargados para no volver a pedir el banner
+      // cada vez que se repinta la cuadrícula.
+      var existingSlots = {};
+      $$('[data-addon-ad-position]', grid).forEach(function (slot) {
+        if (slot.dataset.addonAdList === adListKey) {
+          existingSlots[slot.dataset.addonAdPosition] = slot;
+        }
+      });
+      grid.innerHTML = '';
+      slice.forEach(function (it, i) {
+        grid.insertAdjacentHTML('beforeend', cardHTML(it));
+        var position = i + 1;
+        if (position % AD_EVERY !== 0) return;
+        var slot = existingSlots[String(position)] || createInlineAdSlot(position, adListKey);
+        grid.appendChild(slot);
+        loadInlineAd(slot);
+      });
+    }
 
     var pages = Math.max(1, Math.ceil(state.visible.length / PAGE_SIZE));
     function b(to, label, dis, active) {
@@ -633,37 +750,64 @@
   }
   function find(id) { return state.all.filter(function (i) { return i.id === id; })[0]; }
 
-  async function openDetail(id) {
-    var it = find(id);
-    if (!it) return;
-    state.detailId = id;
-    var m = $('#uniDetailModal');
-    m.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    $('#uTitle').textContent = it.nombre;
-    $('#uBody').innerHTML = '<div class="addon-detail-loading"><div class="spinner"></div></div>';
+  // Rutas tipo #addon?=Nombre%20del%20addon&id=market%3A123
+  function currentAddonRoute() {
+    var hash = window.location.hash || '';
+    if (hash.indexOf('#addon?') !== 0) return null;
+    try {
+      var params = new URLSearchParams(hash.slice('#addon?'.length));
+      return { addonName: params.get('') || '', addonId: params.get('id') || '' };
+    } catch (e) { return null; }
+  }
 
-    if (it.source === 'app' && !state.details[id]) {
-      // El catálogo guardado ya trae estos datos, así que el detalle funciona
-      // incluso sin conexión; luego se refina con la ficha completa.
-      state.details[id] = {
-        descripcion: it.descripcion || '',
+  function resolveRouteItem(route) {
+    if (!route) return null;
+    if (route.addonId) {
+      var exact = find(route.addonId);
+      if (exact) return exact;
+    }
+    var name = String(route.addonName || '').trim().toLocaleLowerCase('es');
+    if (!name) return null;
+    return state.all.filter(function (it) {
+      return String(it.nombre || '').trim().toLocaleLowerCase('es') === name;
+    })[0] || state.all.filter(function (it) {
+      return String(it.nombre || '').toLocaleLowerCase('es').indexOf(name) !== -1;
+    })[0] || null;
+  }
+
+  function handleCatalogRoute(route) {
+    if (!route) return;
+    if (state.loading || !state.all.length) {
+      state.pendingRoute = route;
+      return;
+    }
+    var it = resolveRouteItem(route);
+    if (!it) {
+      window.history.replaceState(null, '', '#addons');
+      return;
+    }
+    if (state.detailId === it.id && !$('#uniDetailModal').classList.contains('hidden')) return;
+    openDetail(it.id, { fromRoute: true });
+  }
+
+  // Ficha en caché de los addons de la app. Migra el formato antiguo.
+  function detailCache_(id, it) {
+    var d = state.details[id];
+    if (!d) {
+      d = state.details[id] = {
+        descripcionI18n: baseI18n(it.descripcion || ''),
         imagenes: (it.imagenes || []).slice(),
         urlDescarga: it.urlDescarga || ''
       };
-      try {
-        var data = await api('getAddon', { id: it.rawId });
-        var a = data.addon || {};
-        var apiImgs = (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean);
-        state.details[id] = {
-          descripcion: a.descripcion || it.descripcion || '',
-          imagenes: apiImgs.length ? apiImgs : (it.imagenes || []).slice(),
-          urlDescarga: safeUrl(a.urlDescarga) || it.urlDescarga || ''
-        };
-      } catch (e) { /* conservamos los datos del catálogo en caché */ }
+      return d;
     }
-    if (state.detailId !== id) return;
-    var d = it.source === 'app' ? state.details[id] : it;
+    if (!d.descripcionI18n) {
+      d.descripcionI18n = baseI18n(d.descripcion || it.descripcion || '');
+    }
+    return d;
+  }
+
+  function renderDetail(it, d, desc, lang) {
     var imgs = (d.imagenes || []).slice();
     if (!imgs.length && it.imagen) imgs.push(it.imagen);
     var gallery = imgs.length
@@ -675,6 +819,10 @@
     var action = (it.source === 'app' && !d.urlDescarga)
       ? '<p class="muted">Este contenido no tiene enlace de descarga.</p>'
       : '<div class="addon-actions"><button class="btn primary" id="uDownload" type="button">⬇️ Descargar</button></div>';
+    var badge = desc.traducido
+      ? '<span class="addon-translated">' + (lang === 'en'
+          ? '🌐 Translated to English' : '🌐 Traducido al español') + '</span>'
+      : '';
     $('#uBody').innerHTML =
       '<div class="addon-detail-meta"><span class="addon-chip">' + esc(it.categoria || 'Contenido') + '</span>' +
       (it.version ? '<span>Versión ' + esc(it.version) + '</span>' : '') +
@@ -682,13 +830,75 @@
       (it.fecha ? '<span>' + esc(dateLabel(it.fecha)) + '</span>' : '') +
       '<span>❤️ ' + fmt(it.likes) + '</span><span>⬇️ ' + fmt(it.descargas) + '</span></div>' +
       gallery +
-      (d.descripcion ? '<div class="addon-description">' + esc(d.descripcion) + '</div>' : '<p class="muted">Sin descripción disponible.</p>') +
+      badge +
+      (desc.texto ? '<div class="addon-description">' + esc(desc.texto) + '</div>'
+        : '<p class="muted">Sin descripción disponible.</p>') +
       action + '<div class="muted" id="uStatus"></div>';
   }
-  function closeDetail() {
+
+  async function openDetail(id, opts) {
+    opts = opts || {};
+    var it = find(id);
+    if (!it) return;
+    if (!opts.fromRoute && !state.detailPushed) {
+      var detailHash = '#addon?=' + encodeURIComponent(it.nombre || '') +
+        '&id=' + encodeURIComponent(id);
+      window.history.pushState({ prizmothynAddon: id }, '', detailHash);
+      state.detailPushed = true;
+    }
+    state.detailId = id;
+    var seq = ++state.detailSeq;
+    var lang = state.descriptionLang;
+    var m = $('#uniDetailModal');
+    m.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    $('#uTitle').textContent = it.nombre;
+    $('#uBody').innerHTML = '<div class="addon-detail-loading"><div class="spinner"></div></div>';
+
+    if (it.source === 'app') {
+      // Mostramos la ficha al instante con los datos guardados y luego la
+      // refinamos con la descripción en el idioma que eligió el usuario.
+      var d = detailCache_(id, it);
+      renderDetail(it, d, descFor(d.descripcionI18n, lang, it.descripcion), lang);
+      try {
+        var data = await api('getAddon', { id: it.rawId, lang: lang });
+        if (state.detailId !== id || seq !== state.detailSeq) return;
+        var a = data.addon || {};
+        var current = descVariant(d.descripcionI18n, lang);
+        setDescVariant(d.descripcionI18n, lang,
+          a.descripcion || (current && current.texto) || '', !!a.descripcionTraducida);
+        d.descripcionOriginal = a.descripcionOriginal || d.descripcionOriginal || '';
+        var apiImgs = (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean);
+        if (apiImgs.length) d.imagenes = apiImgs;
+        d.urlDescarga = safeUrl(a.urlDescarga) || d.urlDescarga;
+        renderDetail(it, d, descFor(d.descripcionI18n, lang, it.descripcion), lang);
+      } catch (e) { /* conservamos los datos del catálogo en caché */ }
+      return;
+    }
+
+    // Marketplace: la descripción original está en PlayFab, se traduce bajo demanda.
+    if (!it.descripcionI18n) it.descripcionI18n = baseI18n(it.descripcion || '');
+    renderDetail(it, it, descFor(it.descripcionI18n, lang, it.descripcion), lang);
+    if (lang === 'es' && !descVariant(it.descripcionI18n, 'es')) {
+      var res = await translateDescriptionText(it.descripcion, 'es');
+      if (state.detailId !== id || seq !== state.detailSeq) return;
+      setDescVariant(it.descripcionI18n, 'es', res.texto, res.traducido);
+      renderDetail(it, it, descFor(it.descripcionI18n, lang, it.descripcion), lang);
+    }
+  }
+  function closeDetail(opts) {
+    opts = opts || {};
     var m = $('#uniDetailModal');
     if (!m) return;
     m.classList.add('hidden'); document.body.style.overflow = ''; state.detailId = '';
+    var wasPushed = state.detailPushed;
+    state.detailPushed = false;
+    if (opts.skipHistory) return;
+    if (wasPushed && window.location.hash.indexOf('#addon?') === 0) {
+      window.history.back();
+    } else if (window.location.hash.indexOf('#addon?') === 0) {
+      window.history.replaceState(null, '', '#addons');
+    }
   }
 
   function filenameFromUrl(url, name) {
@@ -835,6 +1045,25 @@
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDetail(); });
 
+    // Historial: #addon?=nombre&id=... abre/reabre la ficha unificada.
+    window.addEventListener('prizmothyn:addon-route', function (e) {
+      handleCatalogRoute(e && e.detail);
+    });
+    window.addEventListener('hashchange', function () {
+      if (!currentAddonRoute() && state.detailId) closeDetail({ skipHistory: true });
+    });
+
+    // Ajustes cambia el idioma de las descripciones: repintamos la ficha abierta.
+    window.addEventListener('prizmothyn:description-lang', function (e) {
+      var lang = e && e.detail && e.detail.lang === 'en' ? 'en' : 'es';
+      if (lang === state.descriptionLang) return;
+      state.descriptionLang = lang;
+      var id = state.detailId;
+      if (id && !$('#uniDetailModal').classList.contains('hidden')) {
+        openDetail(id, { fromRoute: true });
+      }
+    });
+
     var target = $('#view') || document.body;
     new MutationObserver(function () {
       if (ensureToolbar()) render();
@@ -855,6 +1084,8 @@
   function init() {
     ensureModal();
     bind();
+    var initialRoute = currentAddonRoute();
+    if (initialRoute) state.pendingRoute = initialRoute;
     var tries = 0;
     var timer = setInterval(function () {
       if ($('.addons-page') && $('#addonsGrid')) {
