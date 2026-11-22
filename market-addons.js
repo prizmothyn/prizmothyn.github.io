@@ -189,11 +189,22 @@
   function normalizeMarket(raw) {
     var dp = raw.DisplayProperties || {};
     var identity = Array.isArray(dp.packIdentity) ? dp.packIdentity[0] : null;
-    var imgs = [];
+    // PlayFab suele devolver el Thumbnail al final del array. Lo ordenamos como
+    // el marketplace original: portada, icono, panorama y luego capturas.
+    var buckets = { thumb: [], icon: [], pano: [], shot: [], other: [] };
     (Array.isArray(raw.Images) ? raw.Images : []).forEach(function (img) {
       var u = safeUrl(img.Url);
-      if (u && imgs.indexOf(u) === -1) imgs.push(u);
+      if (!u) return;
+      var tag = String(img.Tag || '').toLowerCase();
+      var type = String(img.Type || '').toLowerCase();
+      var key = (tag === 'thumbnail' || type === 'thumbnail') ? 'thumb'
+        : tag === 'packicon' ? 'icon'
+        : tag === 'panorama' ? 'pano'
+        : tag === 'screenshot' ? 'shot' : 'other';
+      if (buckets[key].indexOf(u) === -1) buckets[key].push(u);
     });
+    var imgs = buckets.thumb.concat(buckets.icon, buckets.pano, buckets.shot, buckets.other)
+      .filter(function (u, i, a) { return a.indexOf(u) === i; });
     var variants = [];
     if (Array.isArray(raw.Contents)) {
       var groups = new Map();
