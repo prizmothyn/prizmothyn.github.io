@@ -28,7 +28,7 @@
     cats: [],
     loading: true, progress: '', error: '',
     token: '', owned: null,
-    details: {}, detailId: ''
+    details: {}, detailId: '', lastBlobUrl: ''
   };
 
   var worker = null, workerSeq = 0;
@@ -118,7 +118,7 @@
   }
 
   async function loadAppItems() {
-    state.progress = 'Cargando tu catálogo…'; render();
+    state.progress = 'Cargando contenido…'; render();
     var data = await api('getAddonCategoryLists');
     (data.addons || []).forEach(function (a) {
       state.all.push({
@@ -138,7 +138,7 @@
         urlDescarga: ''
       });
     });
-    state.progress = 'Tu catálogo: ' + fmt(state.all.length) + ' publicaciones'; render();
+    state.progress = 'Contenido cargado: ' + fmt(state.all.length) + ' publicaciones'; render();
   }
 
   // ── Marketplace (PlayFab) ──────────────────────────────────────────────
@@ -224,12 +224,12 @@
     };
   }
   async function loadMarketItems() {
-    state.progress = 'Cargando claves del Marketplace…'; render();
+    state.progress = 'Cargando contenido…'; render();
     var token = await auth();
     await loadKeys();
     var skip = 0, total = Infinity, added = 0;
     while (skip < Math.min(total, 10000)) {
-      state.progress = 'Cargando Marketplace… ' + fmt(added) + ' disponibles'; render();
+      state.progress = 'Cargando contenido… ' + fmt(added) + ' elementos'; render();
       var data = await pf('/Catalog/Search', {
         count: true, filter: FILTER, scid: SCID, select: 'contents, images',
         top: 300, skip: skip, orderBy: 'startDate DESC'
@@ -346,7 +346,7 @@
         : '<div class="addon-empty" style="grid-column:1/-1"><div class="spinner"></div><p>' + esc(state.progress) + '</p></div>';
       footer.innerHTML = '';
       var sum = $('#uSummary'), info = $('#uInfo');
-      if (sum) sum.textContent = 'Cargando catálogo único…';
+      if (sum) sum.textContent = 'Cargando contenido…';
       if (info) info.textContent = state.progress;
       return;
     }
@@ -422,10 +422,8 @@
           return '<button class="addon-thumb' + (i ? '' : ' active') + '" type="button" data-uthumb="' + i + '"><img src="' + u + '"></button>';
         }).join('') + '</div>' : '') + '</div>'
       : '<div class="addon-gallery-empty">Sin imágenes disponibles</div>';
-    var action = it.source === 'app'
-      ? (d.urlDescarga
-        ? '<div class="addon-actions"><a class="btn primary" href="' + d.urlDescarga + '" target="_blank" rel="noopener noreferrer">⬇️ Abrir descarga</a></div>'
-        : '<p class="muted">Este contenido no tiene enlace de descarga.</p>')
+    var action = (it.source === 'app' && !d.urlDescarga)
+      ? '<p class="muted">Este contenido no tiene enlace de descarga.</p>'
       : '<div class="addon-actions"><button class="btn primary" id="uDownload" type="button">⬇️ Descargar</button></div>';
     $('#uBody').innerHTML =
       '<div class="addon-detail-meta"><span class="addon-chip">' + esc(it.categoria || 'Contenido') + '</span>' +
@@ -435,7 +433,7 @@
       '<span>❤️ ' + fmt(it.likes) + '</span><span>⬇️ ' + fmt(it.descargas) + '</span></div>' +
       gallery +
       (d.descripcion ? '<div class="addon-description">' + esc(d.descripcion) + '</div>' : '<p class="muted">Sin descripción disponible.</p>') +
-      action + '<p class="muted" id="uStatus"></p>';
+      action + '<div class="muted" id="uStatus"></div>';
   }
   function closeDetail() {
     var m = $('#uniDetailModal');
@@ -443,48 +441,108 @@
     m.classList.add('hidden'); document.body.style.overflow = ''; state.detailId = '';
   }
 
+  function filenameFromUrl(url, name) {
+    try {
+      var part = new URL(url).pathname.split('/').filter(Boolean).pop();
+      if (part) return decodeURIComponent(part);
+    } catch (e) { /* la URL puede ser relativa */ }
+    return String(name || 'archivo').replace(/[^\w.\-() ]+/g, '_') + '.zip';
+  }
+
+  function base64ToBytes(b64) {
+    var bin = atob(String(b64 || '').replace(/\s/g, ''));
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  // Inicia la descarga y deja visible el archivo ya descargado (como el drawer del Marketplace).
+  function showDownloadedFile(status, href, filename, isBlob) {
+    if (!isBlob && state.lastBlobUrl) URL.revokeObjectURL(state.lastBlobUrl);
+    var trigger = document.createElement('a');
+    trigger.href = href; trigger.download = filename; trigger.style.display = 'none';
+    document.body.appendChild(trigger); trigger.click(); trigger.remove();
+    status.innerHTML = 'Descarga lista: ' + esc(filename) +
+      '<br><a class="btn primary small" href="' + (isBlob ? href : esc(href)) +
+      '" download="' + esc(filename) + '">💾 ' + esc(filename) + '</a>';
+  }
+
+  function finishBlobDownload(status, bytes, filename) {
+    if (state.lastBlobUrl) URL.revokeObjectURL(state.lastBlobUrl);
+    var url = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+    state.lastBlobUrl = url;
+    showDownloadedFile(status, url, filename, true);
+  }
+
+  async function downloadAppItem(it, directUrl, status) {
+    var filename = filenameFromUrl(directUrl, it.nombre);
+    status.textContent = 'Descargando contenido…';
+    try {
+      // El Apps Script sirve el archivo en base64 para poder mostrar progreso real.
+      // Enviamos el ID para que solo se pueda descargar la URL de ese addon.
+      var data = await api('downloadFile', { id: it.rawId, url: directUrl });
+      var bytes = base64ToBytes(data.base64 || '');
+      if (!bytes.length) throw new Error('Archivo vacío');
+      if (data.filename) filename = data.filename;
+      finishBlobDownload(status, bytes, filename);
+      // Mantiene el contador de descargas de la web original.
+      api('descargarAddon', { id: it.rawId }).catch(function () {});
+    } catch (e) {
+      // Si el Apps Script aún no tiene la acción, se descarga igual con enlace directo.
+      status.textContent = 'Preparando descarga directa…';
+      showDownloadedFile(status, directUrl, filename, false);
+    }
+  }
+
+  async function downloadMarketItem(it, status) {
+    await loadKeys();
+    var urls = (it.variantes && it.variantes[0]) || [];
+    if (!urls.length) throw new Error('Sin archivos de descarga');
+    var res = null, lastError = null;
+    // Los archivos de xboxlive no envían cabeceras CORS: esos van directos al proxy.
+    // El resto se intenta en directo y, si falla, se repite por el proxy.
+    var needsProxy = urls.some(function (u) { return /xboxlive\.com/i.test(u); });
+    var prefixes = needsProxy ? [DOWNLOAD_PROXY] : ['', DOWNLOAD_PROXY];
+    for (var attempt = 0; attempt < prefixes.length; attempt++) {
+      status.textContent = (attempt && !needsProxy)
+        ? 'Conexión directa bloqueada, usando proxy…'
+        : 'Descargando y descifrando…';
+      try {
+        res = await callWorker('DOWNLOAD_AND_PROCESS', {
+          downloadUrls: urls, title: it.nombre, variantLabel: '', proxyPrefix: prefixes[attempt]
+        }, [], function (p) {
+          status.textContent = (p.message || p.stage || 'Procesando…') + (p.percent ? ' (' + Math.round(p.percent) + '%)' : '');
+        });
+        break;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    if (!res) throw lastError || new Error('No se pudo descargar el archivo');
+    finishBlobDownload(status, res.payload.data, res.payload.filename || (it.nombre + '.zip'));
+  }
+
   async function download() {
     var it = find(state.detailId), status = $('#uStatus');
-    if (!it || it.source !== 'market' || !status) return;
-    var btn = $('#uDownload'); btn.disabled = true;
+    if (!it || !status) return;
+    var btn = $('#uDownload');
+    if (btn) btn.disabled = true;
     try {
-      await loadKeys();
-      var urls = (it.variantes && it.variantes[0]) || [];
-      if (!urls.length) throw new Error('Sin archivos de descarga');
-      var res = null, lastError = null;
-      // Los archivos de xboxlive no envían cabeceras CORS: esos van directos al proxy.
-      // El resto se intenta en directo y, si falla, se repite por el proxy.
-      var needsProxy = urls.some(function (u) { return /xboxlive\.com/i.test(u); });
-      var prefixes = needsProxy ? [DOWNLOAD_PROXY] : ['', DOWNLOAD_PROXY];
-      for (var attempt = 0; attempt < prefixes.length; attempt++) {
-        status.textContent = (attempt && !needsProxy)
-          ? 'Conexión directa bloqueada, usando proxy…'
-          : 'Descargando y descifrando…';
-        try {
-          res = await callWorker('DOWNLOAD_AND_PROCESS', {
-            downloadUrls: urls, title: it.nombre, variantLabel: '', proxyPrefix: prefixes[attempt]
-          }, [], function (p) {
-            status.textContent = (p.message || p.stage || 'Procesando…') + (p.percent ? ' (' + Math.round(p.percent) + '%)' : '');
-          });
-          break;
-        } catch (err) {
-          lastError = err;
-        }
+      if (it.source === 'app') {
+        var d = state.details[it.id] || {};
+        if (!d.urlDescarga) throw new Error('Este contenido no tiene enlace de descarga');
+        await downloadAppItem(it, d.urlDescarga, status);
+      } else {
+        await downloadMarketItem(it, status);
       }
-      if (!res) throw lastError || new Error('No se pudo descargar el archivo');
-      var blob = new Blob([res.payload.data], { type: 'application/octet-stream' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url; a.download = res.payload.filename || (it.nombre + '.zip');
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-      status.textContent = 'Descarga lista: ' + a.download;
     } catch (e) {
       var msg = (e && e.message) || '';
       status.textContent = /fetch|network|cors|failed/i.test(msg)
         ? 'No se pudo descargar el archivo. Revisa tu conexión e inténtalo de nuevo.'
         : 'Error: ' + (msg || 'No se pudo descargar');
-    } finally { btn.disabled = false; }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   // ── Eventos ────────────────────────────────────────────────────────────
@@ -538,7 +596,9 @@
       var grid = $('#addonsGrid');
       if (!grid || state.loading || state.error) return;
       var touched = records.some(function (r) { return r.target === grid; });
-      if (touched && !grid.querySelector('[data-u-open]')) render();
+      // Con 0 resultados el grid se queda sin tarjetas propias: no debemos volver
+      // a pintarlo o entraríamos en un bucle que congela la página (p. ej. "reali").
+      if (touched && !grid.querySelector('[data-u-open]') && state.visible.length) render();
     }).observe(document.body, { childList: true, subtree: true });
   }
 
