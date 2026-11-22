@@ -1,4 +1,4 @@
-const VERSION = 'v13';
+const VERSION = 'v14';
 const SHELL_CACHE = 'prizmothyn-' + VERSION;
 const RUNTIME_CACHE = 'prizmothyn-runtime-' + VERSION;
 const CATALOG_PREFIX = 'prizmothyn-catalog-';
@@ -6,6 +6,7 @@ const MAX_RUNTIME_ENTRIES = 120;
 
 const APP_SHELL = [
   './index.html',
+  './ID.html',
   './manifest.json',
   './market-addons.js',
   './assets/marketplace/worker.js',
@@ -63,7 +64,7 @@ async function networkFirst(request, cacheName, fallback, timeoutMs) {
     : null;
   try {
     const response = await fetch(request, { signal: controller.signal });
-    await save(cacheName, fallback || request, response, false);
+    await save(cacheName, request, response, false);
     return response;
   } catch (error) {
     const cache = await caches.open(cacheName);

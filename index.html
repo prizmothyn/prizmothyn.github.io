@@ -2616,9 +2616,11 @@
     background: transparent;
     color: inherit;
     text-align: left;
+    text-decoration: none;
     cursor: pointer;
     pointer-events: auto;
   }
+  .addon-card-open:hover, .addon-card-open:focus-visible { color: inherit; text-decoration: none; }
 
   .addon-cover {
     position: relative;
@@ -3984,14 +3986,6 @@
       });
     }
     var userId = params.userId || '';
-    // #addon?=Nombre%20del%20addon&id=... permite historial y links directos.
-    if (path === 'addon' && Object.prototype.hasOwnProperty.call(params, '')) {
-      return {
-        view: 'unifiedDetail',
-        addonName: params[''],
-        addonId: params.id || ''
-      };
-    }
     if (path.indexOf('addon/') === 0) {
       return {
         view: 'addonDetail',
@@ -4050,15 +4044,6 @@
   function handleHashRoute(force) {
     if (!force && state.routeLock) return;
     var route = parseHashRoute(window.location.hash);
-    if (route.view === 'unifiedDetail') {
-      if (!$('#addonsGrid') || !$('.addons-page')) {
-        navigate('addons', { skipHash: true });
-      }
-      try {
-        window.dispatchEvent(new CustomEvent('prizmothyn:addon-route', { detail: route }));
-      } catch (e) { /* el catálogo unificado puede no estar listo aún */ }
-      return;
-    }
     if (route.view === 'addonDetail') {
       if (!route.addonId) {
         history.replaceState(null, '', '#addons');

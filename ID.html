@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-M5LGKMVJ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#070d18">
+<title>Complemento · Prizmothyn</title>
+<link rel="icon" href="icon/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg: #070d18;
+    --surface: #0e1726;
+    --surface-2: #131f33;
+    --line: rgba(148, 163, 184, .16);
+    --text: #e6edf7;
+    --muted: #93a4bd;
+    --brand: #34d399;
+    --brand-rgb: 52, 211, 153;
+    --cyan: #22d3ee;
+    --danger: #fb7185;
+    --shadow: 0 24px 70px rgba(0, 0, 0, .45);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background:
+      radial-gradient(1000px 560px at 8% -12%, rgba(var(--brand-rgb), .14), transparent 62%),
+      radial-gradient(800px 480px at 100% 0%, rgba(34, 211, 238, .09), transparent 60%),
+      var(--bg);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--cyan); text-decoration-color: rgba(34, 211, 238, .4); text-underline-offset: 3px; }
+  ::selection { background: rgba(var(--brand-rgb), .32); color: #fff; }
+  .wrap { width: 100%; max-width: 980px; margin: 0 auto; padding: 22px 18px 64px; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .back-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 42px; padding: 0 16px; border: 1px solid var(--line);
+    border-radius: 12px; background: rgba(255, 255, 255, .04); color: var(--text);
+    font-weight: 700; text-decoration: none; cursor: pointer;
+    transition: border-color .18s, background .18s, transform .18s;
+  }
+  .back-btn:hover { border-color: rgba(var(--brand-rgb), .55); background: rgba(var(--brand-rgb), .1); transform: translateY(-1px); }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px; }
+  .brand img { width: 34px; height: 34px; border-radius: 10px; object-fit: cover; }
+  .topbar-spacer { flex: 1; }
+  .lang-pill {
+    padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: rgba(255, 255, 255, .04); color: var(--muted); font-size: 12px; font-weight: 700;
+    white-space: nowrap; text-decoration: none;
+  }
+  .lang-pill:hover { border-color: rgba(var(--brand-rgb), .5); color: var(--text); }
+
+  .card {
+    border: 1px solid var(--line); border-radius: 20px;
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  #content { min-height: 320px; }
+  .state { display: grid; place-items: center; gap: 14px; padding: 80px 20px; text-align: center; }
+  .state h1 { margin: 0; font-size: 20px; }
+  .state p { margin: 0; color: var(--muted); max-width: 420px; }
+  .spinner {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid rgba(var(--brand-rgb), .18); border-top-color: var(--brand);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .detail { padding: 22px; }
+  .detail h1 { margin: 0 0 14px; font-size: clamp(22px, 4vw, 32px); line-height: 1.2; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 18px; color: var(--muted); font-size: 13px; }
+  .meta .chip {
+    padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 12px;
+    color: var(--brand); background: rgba(var(--brand-rgb), .11);
+    border: 1px solid rgba(var(--brand-rgb), .25);
+  }
+  .gallery-main {
+    position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 16px; background: rgba(0, 0, 0, .35);
+  }
+  .gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gallery-empty {
+    display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 9;
+    border: 1px dashed var(--line); border-radius: 16px; color: var(--muted);
+  }
+  .thumbs { display: flex; gap: 8px; overflow-x: auto; padding: 12px 2px 4px; }
+  .thumb {
+    flex: 0 0 92px; height: 58px; padding: 0; overflow: hidden; cursor: pointer;
+    border: 2px solid transparent; border-radius: 10px; background: rgba(0, 0, 0, .3);
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb.active { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--brand-rgb), .18); }
+  .translated {
+    display: inline-flex; align-items: center; gap: 6px; margin: 18px 0 0;
+    padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 800;
+    color: var(--brand); background: rgba(var(--brand-rgb), .1);
+    border: 1px solid rgba(var(--brand-rgb), .28);
+  }
+  .description { margin: 12px 0 20px; padding-top: 16px; border-top: 1px solid var(--line); white-space: pre-wrap; line-height: 1.7; }
+  .no-desc { color: var(--muted); margin: 16px 0 20px; }
+  .download-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 46px; padding: 0 22px; border: 0; border-radius: 12px;
+    background: linear-gradient(135deg, var(--brand), #1f9e86); color: #04120d;
+    font-size: 15px; font-weight: 900; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(var(--brand-rgb), .22);
+    transition: transform .18s, box-shadow .18s;
+  }
+  .download-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(var(--brand-rgb), .3); }
+  .download-btn:disabled { opacity: .6; cursor: wait; transform: none; }
+  .status { margin-top: 14px; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+  .status a { font-weight: 800; }
+  .footer { margin-top: 18px; text-align: center; color: var(--muted); font-size: 12px; }
+  @media (max-width: 640px) {
+    .wrap { padding: 14px 12px 48px; }
+    .detail { padding: 15px; }
+    .brand span { display: none; }
+    .thumb { flex-basis: 74px; height: 50px; }
+    .download-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="back-btn" href="index.html#addons">← <span>Volver al catálogo</span></a>
+      <div class="brand"><img src="icon/icon-192.png" alt=""><span>Prizmothyn</span></div>
+      <div class="topbar-spacer"></div>
+      <a class="lang-pill" id="langSwitch" href="#">Español</a>
+    </header>
+    <main class="card" id="content">
+      <div class="state"><div class="spinner"></div><h1>Cargando addon…</h1></div>
+    </main>
+    <p class="footer">Prizmothyn · Catálogo de complementos para Minecraft Bedrock</p>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  // Esta ficha NO usa almacenamiento local: todo llega por ?ID= y se consulta
+  // directamente a la API / PlayFab en cada carga.
+  var API_URL = 'https://script.google.com/macros/s/AKfycbzG8QOsYT3RICly7rITgydaCDQtgmZSx0rvh2xnZUzc4_o0yTW21wtoHHzHWfwocSHG/exec';
+  var PF = 'https://20ca2.playfabapi.com';
+  var SCID = '4fc10100-5f7a-4470-899b-280835760c07';
+  var KEYS_URL = 'https://toolcoin.site/api/keys.php';
+  var WORKER_URL = 'assets/marketplace/worker.js';
+  var CATEGORY_MAP = {
+    Addon: 'Addons', Mashup: 'Addons', World: 'Mapas', SkinPack: 'Skins',
+    TexturePack: 'Texturas', DLC: 'Versiones', Server: 'Scripts', Persona: 'Skins'
+  };
+
+  var params = new URLSearchParams(window.location.search);
+  var idParam = String(params.get('ID') || params.get('id') || '').trim();
+  var lang = params.get('lang') === 'en' ? 'en' : 'es';
+  var source = idParam.indexOf('market:') === 0 ? 'market' : 'app';
+  var rawId = idParam.indexOf('market:') === 0 ? idParam.slice(7)
+    : idParam.indexOf('app:') === 0 ? idParam.slice(4) : idParam;
+  var item = null;
+  var worker = null, workerSeq = 0;
+  var pending = new Map();
+
+  function $(s) { return document.querySelector(s); }
+  function esc(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function safeUrl(v) {
+    if (!v) return '';
+    var u = String(v).trim();
+    return /^https?:\/\//i.test(u) ? esc(u) : '';
+  }
+  function fmt(n) { var x = Number(n); return isFinite(x) ? x.toLocaleString('es-ES') : '0'; }
+  function dateLabel(v) {
+    if (!v) return '';
+    var d = new Date(v);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  function localText(v) {
+    if (!v || typeof v !== 'object') return '';
+    var keys = Object.keys(v);
+    return v.neutral || v.NEUTRAL || v['en-US'] || (keys.length ? String(v[keys[0]]) : '');
+  }
+  function typeOf(raw) {
+    var tags = Array.isArray(raw.Tags) ? raw.Tags.map(String) : [];
+    if (tags.some(function (t) { return t.indexOf('persona') !== -1; })) return 'Persona';
+    if (tags.indexOf('skinpack') !== -1) return 'SkinPack';
+    if (tags.indexOf('worldtemplate') !== -1) return 'World';
+    if (tags.indexOf('resourcepack') !== -1) return 'TexturePack';
+    if (tags.indexOf('mashup') !== -1) return 'Mashup';
+    if (tags.indexOf('addon') !== -1) return 'Addon';
+    return String(raw.ContentType || '').indexOf('3PServerContent') !== -1 ? 'Server' : 'DLC';
+  }
+  function normalizeMarket(raw) {
+    var dp = raw.DisplayProperties || {};
+    var identity = Array.isArray(dp.packIdentity) ? dp.packIdentity[0] : null;
+    var buckets = { thumb: [], icon: [], pano: [], shot: [], other: [] };
+    (Array.isArray(raw.Images) ? raw.Images : []).forEach(function (img) {
+      var u = safeUrl(img.Url);
+      if (!u) return;
+      var tag = String(img.Tag || '').toLowerCase(), type = String(img.Type || '').toLowerCase();
+      var key = (tag === 'thumbnail' || type === 'thumbnail') ? 'thumb'
+        : tag === 'packicon' ? 'icon' : tag === 'panorama' ? 'pano'
+        : tag === 'screenshot' ? 'shot' : 'other';
+      if (buckets[key].indexOf(u) === -1) buckets[key].push(u);
+    });
+    var imgs = buckets.thumb.concat(buckets.icon, buckets.pano, buckets.shot, buckets.other)
+      .filter(function (u, i, a) { return a.indexOf(u) === i; });
+    var variantes = [];
+    if (Array.isArray(raw.Contents)) {
+      var groups = new Map();
+      raw.Contents.forEach(function (c) {
+        if (!c.Url) return;
+        var k = (Array.isArray(c.Tags) ? c.Tags.slice().sort().join(',') : '') || 'Standard';
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(String(c.Url));
+      });
+      Array.from(groups.values()).forEach(function (u) { variantes.push(u); });
+    }
+    var tipo = typeOf(raw);
+    return {
+      nombre: localText(raw.Title || dp.Title) || 'Sin título',
+      version: identity && identity.version ? String(identity.version) : '',
+      creador: dp.creatorName || 'Desconocido',
+      categoria: CATEGORY_MAP[tipo] || 'Addons',
+      likes: Number(raw.Rating && raw.Rating.Average) || 0,
+      descargas: Number(raw.Rating && raw.Rating.TotalCount) || 0,
+      fecha: raw.CreationDate || '',
+      imagen: imgs[0] || '', imagenes: imgs,
+      descripcion: localText(raw.Description),
+      variantes: variantes, urlDescarga: ''
+    };
+  }
+
+  async function api(action, extra) {
+    var payload = { action: action, token: '' };
+    if (extra) Object.keys(extra).forEach(function (k) { payload[k] = extra[k]; });
+    var r = await fetch(API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload), redirect: 'follow', cache: 'no-store', credentials: 'omit'
+    });
+    var j = await r.json();
+    if (!j || j.ok !== true) throw new Error((j && j.message) || 'Error de la API');
+    return j.data;
+  }
+  async function pf(path, body, token) {
+    var headers = { 'Content-Type': 'application/json', 'Accept-Language': 'en-US' };
+    if (token) headers['X-EntityToken'] = token;
+    var r = await fetch(PF + path, {
+      method: 'POST', headers: headers, body: JSON.stringify(body), credentials: 'omit'
+    });
+    var j = await r.json();
+    if (j.code && j.code !== 200) throw new Error(j.errorMessage || 'Error de PlayFab ' + j.code);
+    return j.data || {};
+  }
+  async function playFabToken() {
+    var device = 'pfid_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    var login = await pf('/Client/LoginWithIOSDeviceID',
+      { CreateAccount: true, TitleId: '20CA2', DeviceId: device, OS: 'IOS' });
+    var ent = await pf('/Authentication/GetEntityToken',
+      { Entity: { Id: login.PlayFabId, Type: 'master_player_account' } },
+      login.EntityToken && login.EntityToken.EntityToken);
+    return ent.EntityToken;
+  }
+
+  async function loadApp() {
+    var data = await api('getAddon', { id: rawId, lang: lang });
+    var a = data.addon || {};
+    return {
+      nombre: a.nombre || 'Sin nombre',
+      version: a.version || '', creador: a.subidoPor || 'Prizmothyn',
+      categoria: a.categoria || 'Addons', likes: Number(a.likes) || 0,
+      descargas: Number(a.descargas) || 0, fecha: a.fecha || '',
+      imagen: '', imagenes: (Array.isArray(a.imagenes) ? a.imagenes : []).map(safeUrl).filter(Boolean),
+      descripcion: a.descripcion || '',
+      traducido: !!a.descripcionTraducida,
+      urlDescarga: safeUrl(a.urlDescarga), variantes: []
+    };
+  }
+  async function loadMarket() {
+    if (!/^[A-Za-z0-9-]+$/.test(rawId)) throw new Error('El ID del addon no es válido.');
+    var token = await playFabToken();
+    var data = await pf('/Catalog/Search', {
+      count: true, filter: "id eq '" + rawId + "'", scid: SCID,
+      select: 'contents,images', top: 1, skip: 0, orderBy: 'startDate DESC'
+    }, token);
+    var raw = (Array.isArray(data.Items) ? data.Items : []).filter(function (x) {
+      return String(x.Id) === rawId;
+    })[0];
+    if (!raw) throw new Error('No se encontró el addon en el Marketplace.');
+    var it = normalizeMarket(raw);
+    it.traducido = false;
+    if (lang === 'es' && it.descripcion) {
+      try {
+        var tr = await api('translateDescription', { text: it.descripcion, to: 'es' });
+        if (tr.texto) { it.descripcion = tr.texto; it.traducido = !!tr.traducido; }
+      } catch (e) { /* mostramos el texto original */ }
+    }
+    return it;
+  }
+
+  function render() {
+    if (!item) return;
+    document.title = item.nombre + ' · Prizmothyn';
+    var imgs = (item.imagenes || []).slice();
+    if (!imgs.length && item.imagen) imgs.push(item.imagen);
+    var gallery = imgs.length
+      ? '<div class="gallery-main" id="galleryMain"><img src="' + imgs[0] + '" alt=""></div>' +
+        (imgs.length > 1 ? '<div class="thumbs">' + imgs.map(function (u, i) {
+          return '<button class="thumb' + (i ? '' : ' active') + '" type="button" data-thumb="' + i +
+            '" aria-label="Ver imagen ' + (i + 1) + '"><img src="' + u + '" alt=""></button>';
+        }).join('') + '</div>' : '')
+      : '<div class="gallery-empty">Sin imágenes disponibles</div>';
+    var meta = '<div class="meta"><span class="chip">' + esc(item.categoria || 'Contenido') + '</span>' +
+      (item.version ? '<span>Versión ' + esc(item.version) + '</span>' : '') +
+      '<span>por ' + esc(item.creador) + '</span>' +
+      (item.fecha ? '<span>' + esc(dateLabel(item.fecha)) + '</span>' : '') +
+      '<span>❤️ ' + fmt(item.likes) + '</span><span>⬇️ ' + fmt(item.descargas) + '</span></div>';
+    var badge = item.traducido
+      ? '<span class="translated">🌐 ' + (lang === 'en' ? 'Translated to English' : 'Traducido al español') + '</span>'
+      : '';
+    var desc = item.descripcion
+      ? '<div class="description">' + esc(item.descripcion) + '</div>'
+      : '<p class="no-desc">Sin descripción disponible.</p>';
+    var action = '<button class="download-btn" id="downloadBtn" type="button">⬇️ Descargar</button>' +
+      '<div class="status" id="status"></div>';
+    $('#content').innerHTML = '<div class="detail"><h1>' + esc(item.nombre) + '</h1>' +
+      meta + gallery + badge + desc + action + '</div>';
+    $('#downloadBtn').addEventListener('click', download);
+    $$('[data-thumb]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var i = Number(btn.getAttribute('data-thumb'));
+        if (!imgs[i]) return;
+        var main = $('#galleryMain');
+        if (main) main.innerHTML = '<img src="' + imgs[i] + '" alt="">';
+        $$('[data-thumb]').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+    });
+  }
+  function $$(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
+  function status(text) { var el = $('#status'); if (el) el.textContent = text || ''; }
+
+  function getWorker() {
+    if (worker) return worker;
+    worker = new Worker(WORKER_URL, { type: 'module' });
+    worker.onmessage = function (e) {
+      var d = e.data || {}, p = pending.get(d.id);
+      if (!p) return;
+      if (d.type === 'PROGRESS') { p.onProgress && p.onProgress(d.payload); return; }
+      pending.delete(d.id);
+      if (d.type === 'ERROR') p.reject(new Error(d.error || 'Error del worker'));
+      else p.resolve({ type: d.type, payload: d.payload || {} });
+    };
+    worker.onerror = function (e) {
+      pending.forEach(function (p) { p.reject(new Error(e.message || 'Error del worker')); });
+      pending.clear(); worker = null;
+    };
+    return worker;
+  }
+  function callWorker(type, payload, transfer, onProgress) {
+    var w = getWorker(), id = ++workerSeq;
+    return new Promise(function (resolve, reject) {
+      pending.set(id, { resolve: resolve, reject: reject, onProgress: onProgress });
+      w.postMessage({ id: id, type: type, payload: payload }, transfer || []);
+    });
+  }
+  async function loadKeys() {
+    var r = await fetch(KEYS_URL, { credentials: 'omit', cache: 'no-store' });
+    if (!r.ok) throw new Error('No se pudieron cargar las claves (HTTP ' + r.status + ')');
+    var key = r.headers.get('X-Decryption-Key') || r.headers.get('x-decryption-key') || '';
+    var buf = await r.arrayBuffer();
+    var res = await callWorker('LOAD_KEYS_ENCRYPTED', { encryptedBuffer: buf, key: key }, [buf]);
+    var set = new Set();
+    (res.payload.ownedUuids || []).forEach(function (id) { set.add(String(id).trim().toLowerCase()); });
+    return set;
+  }
+  function filenameFromUrl(url, name) {
+    try {
+      var part = new URL(url).pathname.split('/').filter(Boolean).pop();
+      if (part) return decodeURIComponent(part);
+    } catch (e) { /* URL relativa */ }
+    return String(name || 'archivo').replace(/[^\w.\-() ]+/g, '_') + '.zip';
+  }
+  function base64ToBytes(b64) {
+    var bin = atob(String(b64 || '').replace(/\s/g, ''));
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function saveBlob(bytes, filename) {
+    var url = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+    var trigger = document.createElement('a');
+    trigger.href = url; trigger.download = filename; trigger.style.display = 'none';
+    document.body.appendChild(trigger); trigger.click(); trigger.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    var el = $('#status');
+    if (el) el.innerHTML = 'Descarga lista: ' + esc(filename) +
+      ' · <a href="' + esc(url) + '" download="' + esc(filename) + '">💾 Guardar de nuevo</a>';
+  }
+  async function downloadApp() {
+    var url = item.urlDescarga;
+    if (!url) throw new Error('Este contenido no tiene enlace de descarga.');
+    status('Descargando contenido…');
+    try {
+      var data = await api('downloadFile', { id: rawId, url: url });
+      var bytes = base64ToBytes(data.base64 || '');
+      if (!bytes.length) throw new Error('Archivo vacío');
+      saveBlob(bytes, data.filename || filenameFromUrl(url, item.nombre));
+      api('descargarAddon', { id: rawId }).catch(function () {});
+    } catch (e) {
+      status('Preparando descarga directa…');
+      var link = document.createElement('a');
+      link.href = url; link.download = filenameFromUrl(url, item.nombre);
+      document.body.appendChild(link); link.click(); link.remove();
+    }
+  }
+  async function downloadMarket() {
+    await loadKeys();
+    var urls = (item.variantes && item.variantes[0]) || [];
+    if (!urls.length) throw new Error('Sin archivos de descarga');
+    var res = null, lastError = null;
+    var needsProxy = urls.some(function (u) { return /xboxlive\.com/i.test(u); });
+    var prefixes = needsProxy ? ['https://toolcoin.site/api/proxy.php'] : ['', 'https://toolcoin.site/api/proxy.php'];
+    for (var i = 0; i < prefixes.length; i++) {
+      status((i && !needsProxy) ? 'Conexión directa bloqueada, usando proxy…' : 'Descargando y descifrando…');
+      try {
+        res = await callWorker('DOWNLOAD_AND_PROCESS', {
+          downloadUrls: urls, title: item.nombre, variantLabel: '', proxyPrefix: prefixes[i]
+        }, [], function (p) {
+          status((p.message || p.stage || 'Procesando…') + (p.percent ? ' (' + Math.round(p.percent) + '%)' : ''));
+        });
+        break;
+      } catch (err) { lastError = err; }
+    }
+    if (!res) throw lastError || new Error('No se pudo descargar el archivo');
+    saveBlob(res.payload.data, res.payload.filename || (item.nombre + '.zip'));
+  }
+  async function download() {
+    var btn = $('#downloadBtn');
+    if (btn) btn.disabled = true;
+    try {
+      if (source === 'app') await downloadApp();
+      else await downloadMarket();
+    } catch (e) {
+      var msg = (e && e.message) || '';
+      status(/fetch|network|cors|failed/i.test(msg)
+        ? 'No se pudo descargar. Revisa tu conexión e inténtalo de nuevo.'
+        : 'Error: ' + msg);
+    } finally { if (btn) btn.disabled = false; }
+  }
+
+  function showError(message) {
+    $('#content').innerHTML = '<div class="state"><h1>No se pudo cargar el addon</h1>' +
+      '<p>' + esc(message || 'Inténtalo de nuevo en unos segundos.') + '</p>' +
+      '<a class="back-btn" href="index.html#addons">Volver al catálogo</a></div>';
+  }
+
+  var switchLink = $('#langSwitch');
+  if (idParam) {
+    switchLink.href = 'ID.html?ID=' + encodeURIComponent(idParam) + '&lang=' + (lang === 'es' ? 'en' : 'es');
+    switchLink.textContent = lang === 'es' ? 'Español' : 'English';
+  } else {
+    switchLink.remove();
+  }
+
+  if (!idParam) {
+    showError('Falta el ID del addon. Abre un complemento desde el catálogo.');
+  } else {
+    (source === 'app' ? loadApp() : loadMarket())
+      .then(function (data) { item = data; render(); })
+      .catch(function (e) { showError((e && e.message) || 'Error desconocido'); });
+  }
+})();
+</script>
+</body>
+</html>
