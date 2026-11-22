@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
+<link rel="icon" href="icon/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#087a55">
+<title>Catálogo ordenado · Prizmothyn</title>
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" type="button" title="Volver al inicio" aria-label="Volver al inicio">☰</button>
+  <a class="brand" href="index.html" aria-label="Prizmothyn, inicio"><img class="brand-title" src="icon/title.png" alt="Prizmothyn"></a>
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html" aria-current="page">Catálogo ordenado</a>
+  </nav>
+  <div class="top-actions">
+    <a class="btn ghost small" href="index.html">← Volver</a>
+  </div>
+</header>
+
+<main class="layout catalog-layout">
+  <section class="center">
+    <div id="view">
+      <div class="card addons-hero">
+        <div>
+          <h1>Catálogo ordenado</h1>
+          <p>Cargando el catálogo completo…</p>
+        </div>
+      </div>
+      <div class="center-load"><div class="spinner"></div></div>
+    </div>
+  </section>
+</main>
+
+<div class="modal addon-detail-modal hidden" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+  <div class="modal-card addon-detail" id="detailCard">
+    <div class="modal-head">
+      <button class="btn ghost small addon-detail-back" id="detailClose" type="button" aria-label="Cerrar">←</button>
+      <div><h3 id="detailTitle">Detalle</h3></div>
+      <div class="modal-head-actions">
+        <button class="btn ghost small" id="detailX" type="button" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<script src="java.js"></script>
+</body>
+</html>

@@ -2190,6 +2190,7 @@
       <button type="button" data-side-view="feed">📝 Publicaciones</button>
       <button type="button" data-side-view="search">🔎 Buscar</button>
       <button type="button" data-side-view="addons">🧩 Catálogo</button>
+      <button type="button" id="sideOrderedCatalogBtn">📋 Catálogo ordenado</button>
       <button type="button" data-side-view="skins">🎨 Crear skin</button>
       <button type="button" data-side-view="potions">🧪 Recetas de pociones</button>
       <button type="button" data-side-view="tools">🧭 Herramientas MC Bedrock</button>
@@ -10483,6 +10484,13 @@
       navigator.serviceWorker.register('sw.js').catch(function () {});
     });
   }
+</script>
+<script>
+  // Enlace al catálogo ordenado (sistema independiente en catalogo.html + java.js).
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('sideOrderedCatalogBtn');
+    if (btn) btn.addEventListener('click', function () { window.location.href = 'catalogo.html'; });
+  });
 </script>
 </body>
 </html>
