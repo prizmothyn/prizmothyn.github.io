@@ -3005,6 +3005,59 @@
   @media (max-width: 600px) {
     .addon-detail-modal #uBody { padding-top: 14px; }
   }
+
+  /* Aviso de instalación PWA (solo cuando el navegador permite instalar). */
+  .install-prompt {
+    position: fixed;
+    z-index: 10000;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    width: min(440px, calc(100% - 24px));
+    animation: install-in .28s ease-out;
+  }
+  @keyframes install-in {
+    from { opacity: 0; transform: translate(-50%, 16px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .install-prompt-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .28);
+  }
+  .install-prompt-icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: var(--panel-2);
+  }
+  .install-prompt-body {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .install-prompt-body strong { font-size: 15px; color: var(--text); }
+  .install-prompt-body span { font-size: 12px; color: var(--muted); line-height: 1.35; }
+  .install-prompt-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+  .install-prompt-actions .btn { white-space: nowrap; }
+  @media (max-width: 480px) {
+    .install-prompt { bottom: 10px; }
+    .install-prompt-card { flex-wrap: wrap; }
+    .install-prompt-actions { width: 100%; }
+    .install-prompt-actions .btn { flex: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .install-prompt { animation: none; }
+  }
 </style>
 </head>
 <body>
@@ -11517,6 +11570,21 @@
   }
 })();
 </script>
+
+<div id="installPrompt" class="install-prompt hidden" role="dialog" aria-labelledby="installTitle" aria-describedby="installDesc">
+  <div class="install-prompt-card">
+    <img class="install-prompt-icon" src="icon/icon-192.png" alt="">
+    <div class="install-prompt-body">
+      <strong id="installTitle">Prizmothyn</strong>
+      <span id="installDesc">Añade un acceso directo a tu pantalla de inicio</span>
+    </div>
+    <div class="install-prompt-actions">
+      <button class="btn primary small" id="installNow" type="button">Instalar</button>
+      <button class="btn ghost small" id="installLater" type="button">Ahora no</button>
+    </div>
+  </div>
+</div>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -11525,5 +11593,72 @@
   }
 </script>
 <script src="market-addons.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // Solo se muestra si el navegador dispara beforeinstallprompt (PWA instalable).
+  var KEY = 'prizmothyn_install_dismissed';
+  var box = document.getElementById('installPrompt');
+  var btnInstall = document.getElementById('installNow');
+  var btnLater = document.getElementById('installLater');
+  var deferred = null;
+  if (!box || !btnInstall || !btnLater) return;
+
+  function isInstalled() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        (window.matchMedia && window.matchMedia('(display-mode: minimal-ui)').matches) ||
+        window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+  function wasDismissed() {
+    try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; }
+  }
+  function markDismissed() {
+    try { localStorage.setItem(KEY, '1'); } catch (e) { /* modo privado */ }
+  }
+  function hide() { box.classList.add('hidden'); }
+  function show() {
+    if (!deferred || isInstalled() || wasDismissed()) return;
+    box.classList.remove('hidden');
+  }
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferred = e;
+    // Dejamos terminar el boot del catálogo antes de mostrar el aviso.
+    window.setTimeout(show, 1200);
+  });
+  window.addEventListener('appinstalled', function () {
+    deferred = null;
+    markDismissed();
+    hide();
+  });
+
+  btnLater.addEventListener('click', function () {
+    markDismissed();
+    deferred = null;
+    hide();
+  });
+  btnInstall.addEventListener('click', function () {
+    if (!deferred) { hide(); return; }
+    var promptEvent = deferred;
+    deferred = null;
+    btnInstall.disabled = true;
+    try { promptEvent.prompt(); } catch (e) { hide(); return; }
+    Promise.resolve(promptEvent.userChoice)
+      .then(function (choice) {
+        // Tanto "instalar" como cancelar el diálogo nativo cuentan como decidido.
+        markDismissed();
+      })
+      .catch(function () {})
+      .then(function () {
+        btnInstall.disabled = false;
+        hide();
+      });
+  });
+})();
+</script>
 </body>
 </html>
