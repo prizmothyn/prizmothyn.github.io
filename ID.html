@@ -337,9 +337,22 @@
     };
   }
 
+  var GUEST_ID_KEY = 'wl_guest_id';
+  function getOrCreateGuestId_() {
+    var id = '';
+    try { id = localStorage.getItem(GUEST_ID_KEY) || ''; } catch (e) {}
+    if (!/^g_[A-Za-z0-9_-]{8,64}$/.test(id)) {
+      id = 'g_' + ((window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID().replace(/-/g, '')
+        : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+      try { localStorage.setItem(GUEST_ID_KEY, id); } catch (e) {}
+    }
+    return id;
+  }
+  var guestId = getOrCreateGuestId_();
+
   async function api(action, extra) {
-    var payload = { action: action, token: '' };
-    if (extra) Object.keys(extra).forEach(function (k) { payload[k] = extra[k]; });
+    var payload = Object.assign({ action: action, guestId: guestId }, extra || {});
     var r = await fetch(API_URL, {
       method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload), redirect: 'follow', cache: 'no-store', credentials: 'omit'

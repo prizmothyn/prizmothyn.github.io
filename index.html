@@ -368,13 +368,6 @@
     color: var(--text);
     white-space: nowrap;
   }
-  .brand-title {
-    display: block;
-    width: 154px;
-    height: 69px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 8px rgba(37, 131, 255, .28));
-  }
   .nav { display: none; }
   .nav button {
     border: none;
@@ -587,7 +580,8 @@
   .settings-about-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
   .settings-about-heading h2 { margin: 0; }
   .settings-about-brand { display: inline-flex; align-items: center; min-width: 0; }
-  .settings-about-title { display: block; width: min(112px, 30vw); height: auto; }
+  .settings-about-icon { display: block; width: 34px; height: 34px; object-fit: contain; }
+  .settings-about-name { font-family: "Outfit", "Segoe UI", sans-serif; font-size: 18px; font-weight: 800; }
   .settings-about-footer { display: flex; flex: 1; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 18px 4px 4px 24px; }
   .settings-about span { color: var(--muted); font-size: 13px; }
   .settings-about .version { color: var(--brand); font-weight: 700; }
@@ -1420,7 +1414,6 @@
     .nav { display: none; }
     .topbar { gap: 10px; }
     .brand { gap: 6px; font-size: 17px; }
-    .brand-title { width: 128px; height: 58px; }
   }
 
   /* ══════════════════════════════════════════════════════════════════
@@ -1523,15 +1516,6 @@
     font-weight: 850;
     letter-spacing: -.02em;
     white-space: nowrap;
-  }
-
-  .brand-title {
-    display: block;
-    width: auto;
-    height: 42px;
-    max-width: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(var(--ui-accent-rgb), .28));
   }
 
   .nav {
@@ -2241,7 +2225,6 @@
   @media (max-width: 760px) {
     .topbar { gap: 8px; min-height: 60px; padding-inline: 12px; }
     .brand { max-width: 46vw; }
-    .brand-title { height: 36px; }
     .addons-toolbar { align-items: stretch; }
     .addons-search { flex: 1 1 100%; }
     #uCategory { flex: 1 1 100%; width: 100%; min-width: 0; }
@@ -2283,7 +2266,6 @@
   @media (max-width: 430px) {
     .top-actions { gap: 6px; }
     .brand { max-width: 42vw; font-size: 15px; }
-    .brand-title { height: 32px; }
     .menu-btn { width: 38px; height: 38px; min-width: 38px; }
     .addon-footer, #addonsFooter .btn { font-size: 12px; }
   }
@@ -2427,8 +2409,18 @@
   }
   .side-head { align-items: center; padding: 0 6px; }
   .side-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .side-brand-icon { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
-  .side-brand-title { width: 108px; height: auto; max-height: 34px; object-fit: contain; }
+  .side-brand-icon { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
+  .side-brand-name,
+  .brand-name {
+    font-family: "Outfit", "Segoe UI", sans-serif;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    color: var(--ui-text);
+    white-space: nowrap;
+  }
+  .side-brand-name { font-size: 21px; }
+  .brand-icon { width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(var(--ui-accent-rgb), .35)); }
+  .brand-name { font-size: 22px; }
   .side-head .icon-btn { display: none; }
   .side-title { margin: 12px 0 4px; padding: 0 10px; font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--ui-muted); }
   .side-nav { flex: 0 0 auto; gap: 4px; }
@@ -2462,7 +2454,6 @@
   }
   .menu-btn { display: none; }
   .brand { position: static; left: auto; transform: none; max-width: 220px; }
-  .brand-title { width: 132px; height: auto; max-height: 52px; filter: drop-shadow(0 0 10px rgba(var(--ui-accent-rgb), .35)); }
   .nav { display: flex; gap: 6px; }
   .nav button { border-radius: 18px; padding: 9px 14px; }
   .top-actions { margin-left: auto; }
@@ -2658,7 +2649,7 @@
     .addons-grid, #addonsGrid, .catalog-shelf-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   }
   @media (max-width: 1024px) {
-    :root { --app-topbar-height: 62px; }
+    :root { --app-topbar-height: 70px; }
     .app-body { margin-left: 0; }
     .menu-btn { display: inline-flex; }
     .side-drawer { width: 310px; max-width: 88vw; transform: translateX(-105%); transition: transform .22s cubic-bezier(.16, 1, .3, 1); }
@@ -2667,7 +2658,8 @@
     .side-head .icon-btn { display: inline-flex; }
     .topbar { padding: 0 14px; gap: 10px; }
     .brand { max-width: calc(100% - 70px); }
-    .brand-title { width: 120px; }
+    .brand-icon { width: 32px; height: 32px; }
+    .brand-name { font-size: 19px; }
     .nav { display: none; }
     .bottom-nav {
       display: grid;
@@ -2721,7 +2713,7 @@
     <div class="side-head">
       <div class="side-brand">
         <img class="side-brand-icon" src="icon/icon.png" alt="">
-        <img class="side-brand-title" src="icon/title.png" alt="Prizmothyn">
+        <span class="side-brand-name">Prizmothyn</span>
       </div>
       <button class="icon-btn" id="sideCloseBtn" type="button" title="Cerrar menú">✕</button>
     </div>
@@ -2742,7 +2734,10 @@
   <div class="app-body">
   <header class="topbar">
     <button class="menu-btn" id="menuBtn" type="button" title="Abrir menú" aria-label="Abrir menú">☰</button>
-    <button class="brand" id="homeBtn" type="button" aria-label="Prizmothyn, catálogo"><img class="brand-title" src="icon/title.png" alt="Prizmothyn"></button>
+    <button class="brand" id="homeBtn" type="button" aria-label="Prizmothyn, catálogo">
+      <img class="brand-icon" src="icon/icon.png" alt="">
+      <span class="brand-name">Prizmothyn</span>
+    </button>
     <nav class="nav">
       <button type="button" data-view="addons">Catálogo</button>
       <button type="button" data-view="skins">Crear skin</button>
@@ -5268,7 +5263,8 @@
           '<div class="settings-about-heading">' +
             '<h2>Acerca de</h2>' +
             '<div class="settings-about-brand">' +
-              '<img class="settings-about-title" src="icon/title.png" alt="Prizmothyn">' +
+              '<img class="settings-about-icon" src="icon/icon.png" alt="">' +
+              '<span class="settings-about-name">Prizmothyn</span>' +
             '</div>' +
           '</div>' +
           '<div class="settings-about-footer">' +
