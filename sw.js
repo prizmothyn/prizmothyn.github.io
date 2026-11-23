@@ -1,4 +1,4 @@
-const VERSION = 'v14';
+const VERSION = 'v15';
 const SHELL_CACHE = 'prizmothyn-' + VERSION;
 const RUNTIME_CACHE = 'prizmothyn-runtime-' + VERSION;
 const CATALOG_PREFIX = 'prizmothyn-catalog-';

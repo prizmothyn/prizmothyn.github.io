@@ -472,10 +472,25 @@
       '<a class="back-btn" href="index.html#addons">Volver al catálogo</a></div>';
   }
 
+  // Volver al catálogo por el historial mantiene viva la vista anterior.
+  // Si la ficha se abrió directamente, caemos al enlace normal.
+  document.addEventListener('click', function (e) {
+    var back = e.target.closest && e.target.closest('.back-btn[href="index.html#addons"]');
+    if (back && document.referrer && /index\.html/i.test(document.referrer) && history.length > 1) {
+      e.preventDefault();
+      history.back();
+    }
+  });
+
   var switchLink = $('#langSwitch');
   if (idParam) {
     switchLink.href = 'ID.html?ID=' + encodeURIComponent(idParam) + '&lang=' + (lang === 'es' ? 'en' : 'es');
     switchLink.textContent = lang === 'es' ? 'Español' : 'English';
+    // location.replace evita añadir otra entrada al historial al cambiar idioma.
+    switchLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      location.replace(switchLink.href);
+    });
   } else {
     switchLink.remove();
   }

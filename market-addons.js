@@ -28,14 +28,17 @@
     TexturePack: 'Texturas', DLC: 'Versiones', Server: 'Scripts', Persona: 'Skins'
   };
 
+  var VIEW_KEY = 'prizmothyn_catalog_view_v1';
+
   var state = {
     q: '', cat: '', page: 0,
-    all: [], visible: [],
+    all: [], visible: [], order: [],
     cats: [],
     loading: true, progress: '', error: '',
     token: '', owned: null,
     loadStarted: false, syncing: false, fromCache: false,
-    cacheIndex: new Map(), lastSyncAt: 0, syncNote: ''
+    cacheIndex: new Map(), lastSyncAt: 0, syncNote: '',
+    restoredScroll: null
   };
 
   var worker = null, workerSeq = 0;
@@ -185,6 +188,50 @@
     if (!v || typeof v !== 'object') return '';
     var keys = Object.keys(v);
     return v.neutral || v.NEUTRAL || v['en-US'] || (keys.length ? String(v[keys[0]]) : '');
+  }
+
+  // Vista del catálogo dentro de esta pestaña: al volver de ID.html queremos
+  // el mismo orden, filtros, página y scroll, no un catálogo recién aleatorizado.
+  function readView() {
+    try {
+      var raw = sessionStorage.getItem(VIEW_KEY);
+      if (!raw) return null;
+      var v = JSON.parse(raw);
+      return v && Array.isArray(v.order) ? v : null;
+    } catch (e) { return null; }
+  }
+  function saveView() {
+    try {
+      sessionStorage.setItem(VIEW_KEY, JSON.stringify({
+        order: state.order.slice(),
+        q: state.q,
+        cat: state.cat,
+        page: state.page,
+        scrollY: Math.round(window.scrollY || window.pageYOffset || 0)
+      }));
+    } catch (e) { /* sesión sin almacenamiento */ }
+  }
+  function restoreView() {
+    var v = readView();
+    if (!v) return;
+    state.order = v.order.filter(function (id) { return typeof id === 'string'; });
+    state.q = String(v.q || '');
+    state.cat = String(v.cat || '');
+    state.page = Math.max(0, Number(v.page) || 0);
+    state.restoredScroll = Math.max(0, Number(v.scrollY) || 0);
+    // Evitamos que el navegador restaure su propio scroll por encima del nuestro.
+    if (state.restoredScroll && 'scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }
+
+  function scrollToY(y) {
+    var root = document.documentElement;
+    var prev = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); }
+    catch (e) { window.scrollTo(0, y); }
+    root.style.scrollBehavior = prev;
   }
 
   function shuffle(arr) {
@@ -400,15 +447,37 @@
   }
 
   function commit(items, fromCache, savedAt) {
-    shuffle(items);
-    state.all = items;
-    state.cats = catalogCategories(items);
-    state.cacheIndex = buildIndex(items);
+    // Primera carga: orden aleatorio. Cargas posteriores (caché o sync):
+    // mantenemos el orden anterior y añadimos los nuevos al final.
+    var byId = new Map();
+    items.forEach(function (it) { byId.set(it.id, it); });
+    var ordered = [];
+    if (state.order.length) {
+      state.order.forEach(function (id) {
+        if (byId.has(id)) { ordered.push(byId.get(id)); byId.delete(id); }
+      });
+      items.forEach(function (it) {
+        if (byId.has(it.id)) { ordered.push(it); byId.delete(it.id); }
+      });
+    } else {
+      ordered = shuffle(items.slice());
+    }
+    state.all = ordered;
+    state.order = ordered.map(function (it) { return it.id; });
+    state.cats = catalogCategories(ordered);
+    state.cacheIndex = buildIndex(ordered);
     state.fromCache = !!fromCache;
     state.lastSyncAt = savedAt || Date.now();
     state.loading = false;
     state.progress = '';
     render();
+    if (state.restoredScroll !== null) {
+      var y = state.restoredScroll;
+      state.restoredScroll = null;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { scrollToY(y); });
+      });
+    }
   }
 
   async function loadAll() {
@@ -675,24 +744,27 @@
   // ── Eventos ────────────────────────────────────────────────────────────
   function bind() {
     document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-u-card]')) saveView();
       if (e.target.closest('#uShuffle')) {
-        shuffle(state.all); state.page = 0; render(); return;
+        shuffle(state.all);
+        state.order = state.all.map(function (it) { return it.id; });
+        state.page = 0; saveView(); render(); return;
       }
       var pg = e.target.closest('[data-upage]');
       if (pg) {
         state.page = Number(pg.getAttribute('data-upage')) || 0;
-        render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+        saveView(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
       }
     });
     document.addEventListener('input', function (e) {
       if (e.target.id === 'uSearch') {
-        state.q = e.target.value; state.page = 0; render();
+        state.q = e.target.value; state.page = 0; saveView(); render();
         var input = $('#uSearch');
         if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
       }
     });
     document.addEventListener('change', function (e) {
-      if (e.target.id === 'uCategory') { state.cat = e.target.value; state.page = 0; render(); }
+      if (e.target.id === 'uCategory') { state.cat = e.target.value; state.page = 0; saveView(); render(); }
     });
     var target = $('#view') || document.body;
     new MutationObserver(function () {
@@ -709,9 +781,14 @@
       // a pintarlo o entraríamos en un bucle que congela la página (p. ej. "reali").
       if (touched && !grid.querySelector('[data-u-card]') && state.visible.length) render();
     }).observe(document.body, { childList: true, subtree: true });
+
+    // Cubre recarga manual, cierre de pestaña y navegación a ID.html.
+    window.addEventListener('pagehide', saveView);
+    window.addEventListener('beforeunload', saveView);
   }
 
   function init() {
+    restoreView();
     bind();
     var tries = 0;
     var timer = setInterval(function () {
