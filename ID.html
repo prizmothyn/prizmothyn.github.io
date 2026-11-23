@@ -10,24 +10,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="theme-color" content="#070d18">
+<meta name="theme-color" content="#0b0722">
 <title>Complemento · Prizmothyn</title>
 <link rel="icon" href="icon/icon.png" type="image/png">
 <link rel="apple-touch-icon" href="icon/icon-192.png">
 <link rel="manifest" href="manifest.json">
 <style>
   :root {
-    --bg: #070d18;
-    --surface: #0e1726;
-    --surface-2: #131f33;
-    --line: rgba(148, 163, 184, .16);
-    --text: #e6edf7;
-    --muted: #93a4bd;
+    --bg: #070a1c;
+    --surface: #11163a;
+    --surface-2: #171d49;
+    --line: #262d61;
+    --text: #eef1ff;
+    --muted: #a8b0d8;
     --brand: #8b5cf6;
-    --brand-rgb: 52, 211, 153;
+    --brand-rgb: 139, 92, 246;
     --cyan: #4f8cff;
     --danger: #fb7185;
-    --shadow: 0 24px 70px rgba(0, 0, 0, .45);
+    --shadow: 0 24px 70px rgba(3, 5, 22, .55);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -37,12 +37,12 @@
     color: var(--text);
     background:
       radial-gradient(1000px 560px at 8% -12%, rgba(var(--brand-rgb), .14), transparent 62%),
-      radial-gradient(800px 480px at 100% 0%, rgba(34, 211, 238, .09), transparent 60%),
+      radial-gradient(800px 480px at 100% 0%, rgba(79, 140, 255, .12), transparent 60%),
       var(--bg);
     font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--cyan); text-decoration-color: rgba(34, 211, 238, .4); text-underline-offset: 3px; }
+  a { color: var(--cyan); text-decoration-color: rgba(79, 140, 255, .45); text-underline-offset: 3px; }
   ::selection { background: rgba(var(--brand-rgb), .32); color: #fff; }
   .wrap { width: 100%; max-width: 980px; margin: 0 auto; padding: 22px 18px 64px; }
 
@@ -116,7 +116,7 @@
   .download-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     min-height: 46px; padding: 0 22px; border: 0; border-radius: 12px;
-    background: linear-gradient(135deg, var(--brand), #1f9e86); color: #04120d;
+    background: linear-gradient(135deg, var(--brand), var(--cyan)); color: #ffffff;
     font-size: 15px; font-weight: 900; cursor: pointer;
     box-shadow: 0 10px 30px rgba(var(--brand-rgb), .22);
     transition: transform .18s, box-shadow .18s;
@@ -134,6 +134,95 @@
     .download-btn { width: 100%; }
   }
 </style>
+  <script>
+  (function () {
+    'use strict';
+    // Unica preferencia de tema compartida con index.html.
+    var THEME_STORAGE_KEY = 'wl_theme_preferences';
+    var THEME_PALETTES = {
+      light: { bg: '#070a1c', surface: '#11163a', border: '#262d61' },
+      dark: { bg: '#0b0722', surface: '#18123f', border: '#322a68' },
+      'ultra-dark': { bg: '#04060f', surface: '#0d1029', border: '#1f2450' }
+    };
+    var THEME_DEFAULTS = {
+      v: 2, mode: 'light', accent: '#8b5cf6',
+      background: '', surface: '', border: '', size: 'medium', radius: 'medium'
+    };
+
+    function isValidHexColor(value) {
+      return /^#[0-9a-f]{6}$/i.test(String(value || ''));
+    }
+    function loadThemePreferences() {
+      try {
+        var saved = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY) || '{}');
+        if (!saved || saved.v !== THEME_DEFAULTS.v) return Object.assign({}, THEME_DEFAULTS);
+        return {
+          v: THEME_DEFAULTS.v,
+          mode: Object.prototype.hasOwnProperty.call(THEME_PALETTES, saved.mode) ? saved.mode : THEME_DEFAULTS.mode,
+          accent: isValidHexColor(saved.accent) ? saved.accent : THEME_DEFAULTS.accent,
+          background: isValidHexColor(saved.background) ? saved.background : '',
+          surface: isValidHexColor(saved.surface) ? saved.surface : '',
+          border: isValidHexColor(saved.border) ? saved.border : '',
+          size: ['low', 'medium', 'high'].indexOf(saved.size) >= 0 ? saved.size : THEME_DEFAULTS.size,
+          radius: ['small', 'medium', 'large'].indexOf(saved.radius) >= 0 ? saved.radius : THEME_DEFAULTS.radius
+        };
+      } catch (e) {
+        return Object.assign({}, THEME_DEFAULTS);
+      }
+    }
+    function hexToRgb(hex) {
+      var value = String(hex).replace('#', '');
+      return {
+        r: parseInt(value.slice(0, 2), 16),
+        g: parseInt(value.slice(2, 4), 16),
+        b: parseInt(value.slice(4, 6), 16)
+      };
+    }
+    function blendHexColor(color, target, amount) {
+      var source = hexToRgb(color), dest = hexToRgb(target);
+      return '#' + ['r', 'g', 'b'].map(function (channel) {
+        return Math.round(source[channel] * (1 - amount) + dest[channel] * amount)
+          .toString(16).padStart(2, '0');
+      }).join('');
+    }
+    function applySharedTheme() {
+      var prefs = loadThemePreferences();
+      var palette = THEME_PALETTES[prefs.mode] || THEME_PALETTES.light;
+      var accent = prefs.accent;
+      var background = prefs.background || palette.bg;
+      var surface = prefs.surface || palette.surface;
+      var border = prefs.border || palette.border;
+      var bgRgb = hexToRgb(background);
+      var surfaceRgb = hexToRgb(surface);
+      var accentRgb = hexToRgb(accent);
+      var brightness = (
+        0.2126 * (bgRgb.r + surfaceRgb.r) / 2 +
+        0.7152 * (bgRgb.g + surfaceRgb.g) / 2 +
+        0.0722 * (bgRgb.b + surfaceRgb.b) / 2
+      ) / 255;
+      var lightSurface = brightness > 0.52;
+      var root = document.documentElement;
+      root.dataset.theme = prefs.mode;
+      root.style.setProperty('--bg', background);
+      root.style.setProperty('--bg-rgb', bgRgb.r + ', ' + bgRgb.g + ', ' + bgRgb.b);
+      root.style.setProperty('--surface', surface);
+      root.style.setProperty('--surface-2', blendHexColor(surface, accent, 0.08));
+      root.style.setProperty('--line', border);
+      root.style.setProperty('--text', lightSurface ? '#1a1740' : '#eef1ff');
+      root.style.setProperty('--muted', lightSurface ? '#5f6592' : '#a8b0d8');
+      root.style.setProperty('--brand', accent);
+      root.style.setProperty('--brand-rgb', accentRgb.r + ', ' + accentRgb.g + ', ' + accentRgb.b);
+      root.style.setProperty('--cyan', blendHexColor(accent, '#3b82f6', 0.35));
+      root.style.setProperty('--shadow', '0 24px 70px rgba(' + bgRgb.r + ', ' + bgRgb.g + ', ' + bgRgb.b + ', .55)');
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', background);
+    }
+    applySharedTheme();
+    window.addEventListener('storage', function (e) {
+      if (e.key === THEME_STORAGE_KEY || e.key === null) applySharedTheme();
+    });
+  })();
+  </script>
 </head>
 <body>
   <div class="wrap">
