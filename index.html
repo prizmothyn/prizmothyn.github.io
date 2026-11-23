@@ -7,6 +7,9 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -14,7 +17,7 @@
 <link rel="icon" href="icon/icon.png" type="image/png">
 <link rel="apple-touch-icon" href="icon/icon-192.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#087a55">
+<meta name="theme-color" content="#0b0722">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,63 +25,81 @@
 <title>Prizmothyn · Addons Bedrock</title>
 <style>
   :root {
-    color-scheme: light;
-    --bg: #f3f7f5;
-    --bg-rgb: 243, 247, 245;
-    --bg-soft: #ffffff;
-    --panel: #ffffff;
-    --panel-2: #edf4f0;
-    --line: #dce7e1;
-    --text: #1d3027;
-    --muted: #65796f;
-    --brand: #087a55;
-    --brand-2: #076548;
-    --brand-rgb: 8, 122, 85;
+    color-scheme: dark;
+    --bg: #070a1c;
+    --bg-rgb: 7, 10, 28;
+    --bg-soft: #11163a;
+    --panel: #11163a;
+    --panel-2: #171d49;
+    --line: #262d61;
+    --text: #eef1ff;
+    --muted: #a8b0d8;
+    --brand: #8b5cf6;
+    --brand-2: #4f46e5;
+    --brand-rgb: 139, 92, 246;
     --brand-on: #ffffff;
-    --brand-dark: #043725;
-    --scrollbar-thumb: #cbd7d1;
-    --danger: #f87171;
+    --brand-dark: #3b1d8f;
+    --scrollbar-thumb: #3a447f;
+    --danger: #fb7185;
     --warn: #fbbf24;
-    --radius: 18px;
+    --radius: 14px;
     --ui-scale: 1;
     --content-width: 1280px;
-    --shadow: 0 18px 45px rgba(20, 45, 33, .16);
+    --shadow: 0 18px 45px rgba(3, 5, 22, .5);
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: dark;
+    --bg: #070a1c;
+    --bg-rgb: 7, 10, 28;
+    --bg-soft: #11163a;
+    --panel: #11163a;
+    --panel-2: #171d49;
+    --line: #262d61;
+    --text: #eef1ff;
+    --muted: #a8b0d8;
+    --brand: #4f8cff;
+    --brand-2: #4338ca;
+    --brand-rgb: 79, 140, 255;
+    --brand-dark: #1e3a8a;
+    --scrollbar-thumb: #3a447f;
+    --shadow: 0 18px 45px rgba(3, 5, 22, .5);
   }
 
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #070d18;
-    --bg-rgb: 7, 13, 24;
-    --bg-soft: #0b1424;
-    --panel: #101b2e;
-    --panel-2: #142238;
-    --line: #1e2d47;
-    --text: #e8eefb;
-    --muted: #93a4bd;
-    --brand: #34d399;
-    --brand-2: #10b981;
-    --brand-rgb: 52, 211, 153;
-    --brand-dark: #065f46;
-    --scrollbar-thumb: #24354f;
-    --shadow: 0 18px 45px rgba(0, 0, 0, .45);
+    --bg: #0b0722;
+    --bg-rgb: 11, 7, 34;
+    --bg-soft: #18123f;
+    --panel: #18123f;
+    --panel-2: #211a55;
+    --line: #322a68;
+    --text: #f1edff;
+    --muted: #aca6d4;
+    --brand: #8b5cf6;
+    --brand-2: #6d28d9;
+    --brand-rgb: 139, 92, 246;
+    --brand-dark: #3b1d8f;
+    --scrollbar-thumb: #463a86;
+    --shadow: 0 18px 45px rgba(6, 3, 24, .55);
   }
 
   :root[data-theme="ultra-dark"] {
     color-scheme: dark;
-    --bg: #020304;
-    --bg-rgb: 2, 3, 4;
-    --bg-soft: #080a0c;
-    --panel: #080a0c;
-    --panel-2: #111518;
-    --line: #22292d;
-    --text: #f0f3f4;
-    --muted: #a0aaae;
-    --brand: #34d399;
-    --brand-2: #10b981;
-    --brand-rgb: 52, 211, 153;
-    --brand-dark: #065f46;
-    --scrollbar-thumb: #313a3f;
-    --shadow: 0 18px 45px rgba(0, 0, 0, .68);
+    --bg: #04060f;
+    --bg-rgb: 4, 6, 15;
+    --bg-soft: #0d1029;
+    --panel: #0d1029;
+    --panel-2: #151a3c;
+    --line: #1f2450;
+    --text: #eef1ff;
+    --muted: #9ba4cc;
+    --brand: #a78bfa;
+    --brand-2: #7c3aed;
+    --brand-rgb: 167, 139, 250;
+    --brand-dark: #4c1d95;
+    --scrollbar-thumb: #313866;
+    --shadow: 0 18px 45px rgba(0, 0, 0, .7);
   }
 
   * { box-sizing: border-box; }
@@ -1358,7 +1379,7 @@
     font-weight: 700;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 2px 3px rgba(0,0,0,.22);
   }
-  .roman-level:hover { border-color: var(--brand); color: #e7fff5; }
+  .roman-level:hover { border-color: var(--brand); color: #efeaff; }
   .roman-level[aria-pressed="true"] { border: 2px solid #e8f4ed; color: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.9), inset 0 0 12px rgba(var(--brand-rgb), .35); }
   .enchant-plan { display: grid; gap: 10px; padding: 16px; }
   .enchant-plan h3 { margin: 0; font-size: 17px; }
@@ -1407,26 +1428,26 @@
      Tokens propios (no sobrescritos por el panel de temas)
      ══════════════════════════════════════════════════════════════════ */
   :root {
-    --ui-bg: #05080f;
-    --ui-bg-2: #080e1a;
-    --ui-panel: #0d1626;
-    --ui-panel-2: #132038;
-    --ui-panel-3: #182844;
-    --ui-line: #1d2c46;
-    --ui-line-strong: #2b3f60;
-    --ui-text: #eaf1ff;
-    --ui-muted: #98a9c2;
-    --ui-accent: #34d399;
-    --ui-accent-2: #22d3ee;
-    --ui-accent-rgb: 52, 211, 153;
-    --ui-cyan-rgb: 34, 211, 238;
+    --ui-bg: #070a1c;
+    --ui-bg-2: #0b0a24;
+    --ui-panel: #11163a;
+    --ui-panel-2: #171d49;
+    --ui-panel-3: #20285e;
+    --ui-line: #262d61;
+    --ui-line-strong: #3a447f;
+    --ui-text: #eef1ff;
+    --ui-muted: #a8b0d8;
+    --ui-accent: #8b5cf6;
+    --ui-accent-2: #4f8cff;
+    --ui-accent-rgb: 139, 92, 246;
+    --ui-cyan-rgb: 79, 140, 255;
     --ui-danger: #fb7185;
     --ui-warn: #fbbf24;
-    --ui-radius: 18px;
-    --ui-radius-sm: 12px;
-    --ui-shadow: 0 20px 48px rgba(0, 0, 0, .42);
-    --ui-shadow-soft: 0 10px 28px rgba(0, 0, 0, .28);
-    --ui-glow: 0 0 0 1px rgba(var(--ui-accent-rgb), .18), 0 0 26px rgba(var(--ui-cyan-rgb), .12);
+    --ui-radius: 14px;
+    --ui-radius-sm: 10px;
+    --ui-shadow: 0 20px 48px rgba(3, 5, 22, .55);
+    --ui-shadow-soft: 0 10px 28px rgba(3, 5, 22, .4);
+    --ui-glow: 0 0 0 1px rgba(var(--ui-accent-rgb), .18), 0 0 26px rgba(var(--ui-cyan-rgb), .14);
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -1483,7 +1504,7 @@
     min-height: 66px;
     padding: 9px clamp(12px, 3vw, 32px);
     border-bottom: 1px solid rgba(var(--ui-accent-rgb), .18);
-    background: linear-gradient(180deg, rgba(6, 11, 21, .94), rgba(6, 11, 21, .76));
+    background: linear-gradient(180deg, rgba(8, 10, 30, .94), rgba(8, 10, 30, .78));
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     box-shadow: 0 12px 32px rgba(0, 0, 0, .28);
@@ -1551,7 +1572,7 @@
   .side-nav button.active,
   .bottom-nav button.active,
   .tab.active {
-    color: #04140f;
+    color: #ffffff;
     background: linear-gradient(135deg, var(--ui-accent), var(--ui-accent-2));
     border-color: transparent;
     box-shadow: 0 8px 20px rgba(var(--ui-accent-rgb), .2);
@@ -1586,7 +1607,7 @@
     width: min(100%, 860px);
     gap: 6px;
     border-top: 1px solid rgba(var(--ui-accent-rgb), .18);
-    background: linear-gradient(180deg, rgba(7, 13, 24, .9), rgba(7, 13, 24, .98));
+    background: linear-gradient(180deg, rgba(8, 10, 32, .92), rgba(9, 11, 36, .98));
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
   }
@@ -1624,15 +1645,15 @@
 
   .btn.primary {
     border-color: transparent;
-    background: linear-gradient(135deg, #10b981, #06b6d4);
-    color: #04140f;
-    box-shadow: 0 12px 26px rgba(16, 185, 129, .24);
+    background: linear-gradient(135deg, #4f8cff, #4f46e5);
+    color: #ffffff;
+    box-shadow: 0 12px 26px rgba(124, 58, 237, .28);
   }
 
-  .btn.primary:hover { filter: brightness(1.08); box-shadow: 0 14px 32px rgba(16, 185, 129, .32); }
+  .btn.primary:hover { filter: brightness(1.08); box-shadow: 0 14px 32px rgba(79, 140, 255, .34); }
 
   .btn.ghost { background: rgba(255, 255, 255, .035); border-color: var(--ui-line); }
-  .btn.ghost:hover { background: rgba(var(--ui-accent-rgb), .09); color: #a7f3d0; }
+  .btn.ghost:hover { background: rgba(var(--ui-accent-rgb), .09); color: #c4b5fd; }
   .btn.danger { border-color: rgba(251, 113, 133, .38); background: rgba(251, 113, 133, .12); color: #ffb3bf; }
   .btn.small { min-height: 36px; padding: 7px 14px; font-size: 13px; }
   .btn.block { width: 100%; }
@@ -1652,7 +1673,7 @@
     padding: 10px 14px;
     border: 1px solid var(--ui-line);
     border-radius: var(--ui-radius-sm);
-    background: rgba(4, 9, 18, .62);
+    background: rgba(6, 8, 32, .72);
     color: var(--ui-text);
     outline: none;
     transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
@@ -1675,7 +1696,7 @@
   .settings-select:focus, .assistant-chat-form input:focus,
   .potions-search input:focus {
     border-color: var(--ui-accent);
-    background: rgba(6, 13, 24, .82);
+    background: rgba(8, 10, 38, .86);
     box-shadow: 0 0 0 3px rgba(var(--ui-accent-rgb), .16);
   }
 
@@ -1775,7 +1796,7 @@
   .tools-tab[aria-pressed="true"] {
     border-color: transparent;
     background: linear-gradient(135deg, rgba(var(--ui-accent-rgb), .92), rgba(var(--ui-cyan-rgb), .82));
-    color: #04140f;
+    color: #ffffff;
     box-shadow: 0 8px 20px rgba(var(--ui-accent-rgb), .2);
   }
 
@@ -1785,7 +1806,7 @@
     padding: 0 6px;
     border-radius: 999px;
     background: rgba(var(--ui-cyan-rgb), .14);
-    color: #a5f3fc;
+    color: #bfdbfe;
     font-size: 10px;
     font-weight: 850;
   }
@@ -1835,7 +1856,7 @@
     font-size: 15px;
   }
 
-  .addons-search input::placeholder { color: #71859f; }
+  .addons-search input::placeholder { color: #7f8ab8; }
 
   #uCategory {
     flex: 0 1 220px;
@@ -1903,7 +1924,7 @@
     border: 1px solid rgba(var(--ui-cyan-rgb), .4);
     border-radius: 10px;
     background: rgba(4, 9, 18, .78);
-    color: #a5f3fc;
+    color: #bfdbfe;
     content: "⬇";
     font-size: 15px;
     opacity: 0;
@@ -2017,7 +2038,7 @@
     border: 1px solid rgba(var(--ui-accent-rgb), .26);
     border-radius: 999px;
     background: rgba(var(--ui-accent-rgb), .11);
-    color: #9df3d1;
+    color: #c4b5fd;
     font-size: 11px;
     font-weight: 800;
     line-height: 1.2;
@@ -2038,7 +2059,7 @@
   }
 
   .addon-stats span { display: inline-flex; align-items: center; gap: 5px; }
-  .addon-body > .addon-meta:last-child { color: #7f92ac; }
+  .addon-body > .addon-meta:last-child { color: #8e98c6; }
 
   .addon-inline-ad {
     display: grid;
@@ -2072,7 +2093,7 @@
   .modal {
     z-index: 100;
     padding: clamp(10px, 2vw, 28px);
-    background: rgba(2, 5, 12, .84);
+    background: rgba(4, 6, 26, .86);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
@@ -2088,7 +2109,7 @@
   .modal-actions { flex-wrap: wrap; }
 
   .addon-detail-modal {
-    background: linear-gradient(180deg, rgba(4, 8, 16, .97), rgba(6, 12, 22, .98));
+    background: linear-gradient(180deg, rgba(6, 8, 30, .97), rgba(9, 11, 38, .98));
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
@@ -2101,7 +2122,7 @@
 
   .addon-detail-modal .addon-detail .modal-head {
     border-bottom: 1px solid var(--ui-line);
-    background: linear-gradient(180deg, rgba(11, 19, 33, .97), rgba(11, 19, 33, .88));
+    background: linear-gradient(180deg, rgba(16, 19, 52, .97), rgba(16, 19, 52, .88));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
@@ -2112,11 +2133,11 @@
   .addon-gallery-main {
     border: 1px solid var(--ui-line-strong);
     border-radius: 18px;
-    background: #05080e;
+    background: #050718;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .02);
   }
 
-  .addon-gallery-main img { object-fit: contain; background: #05080e; }
+  .addon-gallery-main img { object-fit: contain; background: #050718; }
 
   .addon-thumbs { max-width: 100%; padding-bottom: 6px; }
 
@@ -2144,7 +2165,7 @@
     min-height: 50px;
     font-size: 15px;
     font-weight: 850;
-    box-shadow: 0 14px 32px rgba(16, 185, 129, .3);
+    box-shadow: 0 14px 32px rgba(124, 58, 237, .34);
   }
 
   .addon-like-btn.liked {
@@ -2154,8 +2175,8 @@
   }
 
   .addon-like-btn.liked:disabled { opacity: 1; }
-  .addon-translated { border: 1px solid rgba(var(--ui-cyan-rgb), .28); background: rgba(var(--ui-cyan-rgb), .1); color: #a5f3fc; }
-  .addon-description { color: #d8e3f5; line-height: 1.7; }
+  .addon-translated { border: 1px solid rgba(var(--ui-cyan-rgb), .28); background: rgba(var(--ui-cyan-rgb), .1); color: #bfdbfe; }
+  .addon-description { color: #e5e7ff; line-height: 1.7; }
 
   .addon-detail-back {
     width: 44px;
@@ -2189,7 +2210,7 @@
     background: linear-gradient(180deg, var(--ui-panel), var(--ui-bg-2));
   }
 
-  .side-overlay { background: rgba(1, 4, 10, .72); backdrop-filter: blur(3px); }
+  .side-overlay { background: rgba(2, 3, 16, .76); backdrop-filter: blur(3px); }
   .side-nav button.danger { color: #ffb3bf; }
   .side-nav button.danger:hover { background: rgba(251, 113, 133, .1); }
 
@@ -2197,7 +2218,7 @@
   .skin-swatch[aria-pressed="true"] {
     border-color: var(--ui-accent);
     background: rgba(var(--ui-accent-rgb), .14);
-    color: #a7f3d0;
+    color: #c4b5fd;
   }
 
   .seed-upload-dropzone.is-dragging { border-color: var(--ui-accent); background: rgba(var(--ui-accent-rgb), .1); }
@@ -2362,6 +2383,328 @@
   @media (prefers-reduced-motion: reduce) {
     .install-prompt { animation: none; }
   }
+
+  /* ══════════════════════════════════════════════════════════════════
+     SHELL DE MARKETPLACE · AZUL OSCURO + MORADO OSCURO
+     ══════════════════════════════════════════════════════════════════ */
+  :root {
+    --app-sidebar-width: 252px;
+    --app-topbar-height: 72px;
+    --app-radius: 8px;
+    --app-radius-lg: 14px;
+    --app-shadow: 0 8px 32px rgba(2, 3, 18, .62);
+  }
+
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    background:
+      radial-gradient(900px 480px at 10% -10%, rgba(139, 92, 246, .18), transparent 60%),
+      radial-gradient(820px 460px at 100% -5%, rgba(79, 140, 255, .14), transparent 58%),
+      linear-gradient(180deg, var(--ui-bg), var(--ui-bg-2));
+  }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { border: 0; border-radius: 4px; background: rgba(255, 255, 255, .12); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .24); }
+  :focus-visible { outline: 2px solid var(--ui-accent-2); outline-offset: 2px; }
+
+  .app-body { min-width: 0; margin-left: var(--app-sidebar-width); }
+
+  .side-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    width: var(--app-sidebar-width);
+    max-width: none;
+    transform: none;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 20px 16px 16px;
+    border-right: 1px solid var(--ui-line);
+    background: linear-gradient(180deg, var(--ui-bg-2), var(--ui-bg));
+    box-shadow: 8px 0 32px rgba(0, 0, 0, .38);
+  }
+  .side-head { align-items: center; padding: 0 6px; }
+  .side-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .side-brand-icon { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+  .side-brand-title { width: 108px; height: auto; max-height: 34px; object-fit: contain; }
+  .side-head .icon-btn { display: none; }
+  .side-title { margin: 12px 0 4px; padding: 0 10px; font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--ui-muted); }
+  .side-nav { flex: 0 0 auto; gap: 4px; }
+  .side-nav button {
+    justify-content: flex-start;
+    min-height: 42px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 18px;
+    background: transparent;
+    color: var(--ui-muted);
+    font-weight: 650;
+  }
+  .side-nav button:hover { border-color: var(--ui-line); background: var(--ui-panel-2); color: var(--ui-text); }
+  .side-nav button.active {
+    border-color: rgba(var(--ui-accent-rgb), .45);
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(var(--ui-accent-rgb), .32), rgba(var(--ui-cyan-rgb), .24));
+    box-shadow: 0 8px 20px rgba(var(--ui-accent-rgb), .14);
+  }
+  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 11px; line-height: 1.5; }
+  .side-overlay { display: none; }
+
+  .topbar {
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+    padding: 0 clamp(16px, 2.4vw, 32px);
+    gap: 18px;
+    border-bottom: 1px solid var(--ui-line);
+    background: linear-gradient(180deg, rgba(8, 10, 32, .94), rgba(8, 10, 32, .78));
+  }
+  .menu-btn { display: none; }
+  .brand { position: static; left: auto; transform: none; max-width: 220px; }
+  .brand-title { width: 132px; height: auto; max-height: 52px; filter: drop-shadow(0 0 10px rgba(var(--ui-accent-rgb), .35)); }
+  .nav { display: flex; gap: 6px; }
+  .nav button { border-radius: 18px; padding: 9px 14px; }
+  .top-actions { margin-left: auto; }
+
+  .layout, .layout.catalog-layout {
+    display: block;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 26px clamp(16px, 2.4vw, 32px) 120px;
+  }
+  .layout .center, .layout .left, .layout .right { width: 100%; }
+  .bottom-nav { display: none; }
+  .native-ad-slot { max-width: 100%; }
+  .addons-page, .catalog-page, .potions-page, .tools-page, .skin-studio { gap: 22px; }
+
+  .addons-hero, .catalog-masthead {
+    display: flex;
+    min-height: 290px;
+    align-items: flex-end;
+    padding: clamp(22px, 3vw, 36px);
+    border: 1px solid var(--ui-line);
+    border-radius: var(--app-radius-lg);
+    background:
+      radial-gradient(ellipse at 82% 18%, rgba(var(--ui-cyan-rgb), .28), transparent 42%),
+      radial-gradient(ellipse at 14% 0%, rgba(var(--ui-accent-rgb), .32), transparent 55%),
+      linear-gradient(135deg, var(--ui-panel-2), var(--ui-bg-2));
+    box-shadow: var(--app-shadow);
+    overflow: hidden;
+  }
+  .addons-hero::before, .catalog-masthead::before {
+    position: absolute;
+    top: -120px;
+    right: 4%;
+    width: 300px;
+    height: 300px;
+    border: 1px solid rgba(var(--ui-accent-rgb), .18);
+    border-radius: 50%;
+    box-shadow: 0 0 0 34px rgba(var(--ui-accent-rgb), .035), 0 0 0 68px rgba(var(--ui-cyan-rgb), .025);
+    content: "";
+    pointer-events: none;
+  }
+  .hero-copy, .catalog-masthead-copy { position: relative; z-index: 1; max-width: 640px; }
+  .addons-hero h1, .catalog-masthead h1 {
+    font-family: "Outfit", "Segoe UI", sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.06;
+    letter-spacing: -.04em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .55);
+  }
+  .addons-hero p, .catalog-masthead p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    max-width: 58ch;
+    color: var(--ui-muted);
+    line-height: 1.55;
+  }
+  .catalog-eyebrow { color: var(--ui-accent-2); font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .addons-count {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    z-index: 2;
+    padding: 6px 10px;
+    border: 1px solid var(--ui-line);
+    border-radius: 999px;
+    background: rgba(6, 8, 30, .66);
+    color: var(--ui-muted);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .hero-visual {
+    position: absolute;
+    right: clamp(18px, 3vw, 40px);
+    bottom: 24px;
+    z-index: 1;
+    display: grid;
+    width: 270px;
+    aspect-ratio: 16 / 9;
+    place-items: center;
+    border: 1px solid rgba(var(--ui-accent-rgb), .28);
+    border-radius: var(--app-radius);
+    background: radial-gradient(circle at 50% 40%, rgba(var(--ui-accent-rgb), .22), transparent 62%), rgba(4, 6, 24, .62);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, .55);
+  }
+  .hero-visual img { width: 112px; height: 112px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(var(--ui-accent-rgb), .45)); }
+
+  .catalog-filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap: 8px; }
+  .catalog-filter-label { grid-column: 1 / -1; margin: 0; font-family: "Outfit", sans-serif; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .catalog-category {
+    justify-content: flex-start;
+    min-height: 52px;
+    padding: 10px 12px;
+    border: 1px solid var(--ui-line);
+    border-radius: var(--app-radius);
+    background: var(--ui-panel);
+    color: var(--ui-muted);
+    font-size: 13px;
+  }
+  .catalog-category:hover { transform: translateY(-2px); border-color: rgba(var(--ui-accent-rgb), .55); color: var(--ui-text); }
+  .catalog-category[aria-pressed="true"] {
+    border-color: transparent;
+    color: #ffffff;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, .24);
+  }
+  .catalog-category-count { background: rgba(255, 255, 255, .14); color: #ffffff; }
+
+  .addons-toolbar { border: 1px solid var(--ui-line); border-radius: var(--app-radius); background: rgba(10, 13, 42, .92); }
+  [data-addon-search-form], [data-seed-search] {
+    position: sticky;
+    top: var(--app-topbar-height);
+    z-index: 30;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .addons-search input {
+    height: 50px;
+    border: 2px solid var(--ui-panel-2);
+    border-radius: var(--app-radius);
+    background: var(--ui-bg-2);
+    font-size: 14px;
+  }
+  .addons-search input::placeholder { color: #7f8ab8; }
+  .addons-search input:focus { border-color: var(--ui-accent); box-shadow: 0 0 0 3px rgba(var(--ui-accent-rgb), .14); }
+  .addons-sort { min-height: 50px; border-radius: var(--app-radius); }
+
+  .addons-grid, #addonsGrid, .catalog-shelf-grid, .seeds-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    gap: 14px;
+  }
+  .addon-card {
+    border: 1px solid var(--ui-line);
+    border-radius: var(--app-radius);
+    background: var(--ui-panel);
+    box-shadow: var(--ui-shadow-soft);
+  }
+  .addon-card:hover { transform: translateY(-2px); border-color: var(--ui-line-strong); }
+  .addon-cover { aspect-ratio: 16 / 9; background: #07091f; }
+  .addon-cover img { object-fit: contain; }
+  .addon-body { padding: 10px 12px 12px; gap: 6px; }
+  .addon-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; }
+  .addon-meta, .addon-stats { font-family: "JetBrains Mono", monospace; font-size: 11px; }
+  .addon-chip { border-radius: 999px; background: rgba(var(--ui-cyan-rgb), .14); color: #bfdbfe; }
+  .addon-stats span { white-space: nowrap; }
+
+  .catalog-shelf { gap: 10px; }
+  .catalog-shelf-head { align-items: center; gap: 12px; }
+  .catalog-shelf-head h2 { font-family: "Outfit", sans-serif; font-size: 14px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+  .catalog-shelf-head > div { order: 0; }
+  .catalog-shelf-head::after { flex: 1; order: 1; height: 1px; background: var(--ui-line); content: ""; }
+  .catalog-shelf-head .btn { order: 2; }
+  .catalog-all-link { font-family: "Outfit", sans-serif; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+
+  .modal-card { border: 1px solid var(--ui-line); border-radius: var(--app-radius-lg); background: var(--ui-panel); box-shadow: 0 16px 48px rgba(0, 0, 0, .7); }
+  .addon-detail h3 { font-family: "Outfit", sans-serif; font-weight: 800; letter-spacing: -.02em; }
+  .addon-gallery-main { aspect-ratio: 16 / 9; border: 1px solid var(--ui-line); border-radius: var(--app-radius); background: #07091f; }
+  .addon-gallery-main img { object-fit: contain; }
+  .addon-thumb { border-radius: var(--app-radius); }
+  .addon-actions .btn.primary {
+    border-color: transparent;
+    color: #ffffff;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5 55%, #2563eb);
+    box-shadow: 0 12px 26px rgba(124, 58, 237, .26);
+  }
+  .addon-description { border-top: 1px solid var(--ui-line); padding-top: 16px; }
+  .addon-translated { border-radius: var(--app-radius); background: rgba(var(--ui-cyan-rgb), .1); color: #bfdbfe; }
+
+  .toast {
+    top: calc(var(--app-topbar-height) + 14px);
+    bottom: auto;
+    border: 1px solid var(--ui-line-strong);
+    border-left: 4px solid var(--ui-accent);
+    border-radius: 999px;
+    background: rgba(10, 13, 42, .94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, .6);
+  }
+  .toast.show { transform: translate(-50%, 0); }
+  .toast.err { border-left-color: var(--ui-danger); }
+  .toast.warn { border-left-color: var(--ui-warn); }
+
+  .assistant-chat-toggle { left: auto; right: 22px; bottom: calc(22px + env(safe-area-inset-bottom)); }
+  .assistant-chat-panel { left: auto; right: 22px; bottom: calc(94px + env(safe-area-inset-bottom)); }
+  .install-prompt-card { border-radius: var(--app-radius-lg); }
+
+  @media (min-width: 1350px) {
+    .addons-grid, #addonsGrid, .catalog-shelf-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  }
+  @media (max-width: 1024px) {
+    :root { --app-topbar-height: 62px; }
+    .app-body { margin-left: 0; }
+    .menu-btn { display: inline-flex; }
+    .side-drawer { width: 310px; max-width: 88vw; transform: translateX(-105%); transition: transform .22s cubic-bezier(.16, 1, .3, 1); }
+    .side-drawer.open { transform: translateX(0); }
+    .side-overlay { display: block; }
+    .side-head .icon-btn { display: inline-flex; }
+    .topbar { padding: 0 14px; gap: 10px; }
+    .brand { max-width: calc(100% - 70px); }
+    .brand-title { width: 120px; }
+    .nav { display: none; }
+    .bottom-nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: min(100%, 560px);
+      left: 0;
+      right: 0;
+      margin-inline: auto;
+      border-top: 1px solid var(--ui-line);
+      background: rgba(8, 10, 32, .95);
+    }
+    .addons-hero, .catalog-masthead { min-height: 220px; padding: 22px; }
+    .hero-visual { display: none; }
+    .catalog-filter-row { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: none; }
+    .catalog-filter-row::-webkit-scrollbar { display: none; }
+    .catalog-filter-label { flex: 0 0 auto; grid-column: auto; }
+    .catalog-category { flex: 0 0 auto; min-width: 132px; scroll-snap-align: start; }
+    [data-addon-search-form], [data-seed-search] { top: var(--app-topbar-height); }
+    .toast { top: calc(var(--app-topbar-height) + 12px); }
+    .assistant-chat-toggle { left: max(14px, env(safe-area-inset-left)); right: auto; bottom: calc(78px + env(safe-area-inset-bottom)); }
+    .assistant-chat-panel { left: max(12px, env(safe-area-inset-left)); right: auto; bottom: calc(146px + env(safe-area-inset-bottom)); width: calc(100vw - 24px); }
+  }
+  @media (max-width: 950px) {
+    .addons-grid, #addonsGrid, .catalog-shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  }
+  @media (max-width: 600px) {
+    .addons-grid, #addonsGrid, .catalog-shelf-grid, .seeds-grid { grid-template-columns: 1fr !important; }
+    .addons-hero, .catalog-masthead { min-height: 0; padding: 20px; }
+    .addons-hero h1, .catalog-masthead h1 { font-size: clamp(24px, 7vw, 32px); }
+    .addons-count { display: none; }
+    .bottom-nav button { flex-direction: column; gap: 2px; min-height: 50px; }
+    .bottom-nav .bottom-label { font-size: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .side-drawer, .addon-card, .catalog-category { transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -2374,21 +2717,29 @@
 <!-- ══════════════ APLICACIÓN ══════════════ -->
 <div id="appScreen" class="hidden">
   <div id="sideOverlay" class="side-overlay hidden"></div>
-  <aside id="sideDrawer" class="side-drawer" aria-hidden="true">
+  <aside id="sideDrawer" class="side-drawer" aria-hidden="false">
     <div class="side-head">
-      <strong>Prizmothyn</strong>
+      <div class="side-brand">
+        <img class="side-brand-icon" src="icon/icon.png" alt="">
+        <img class="side-brand-title" src="icon/title.png" alt="Prizmothyn">
+      </div>
       <button class="icon-btn" id="sideCloseBtn" type="button" title="Cerrar menú">✕</button>
     </div>
     <nav class="side-nav">
-      <p class="side-title">Navegación</p>
+      <p class="side-title">Explorar</p>
       <button type="button" data-side-view="addons">🧩 Catálogo</button>
+      <button type="button" data-side-view="servers">🖥️ Servidores</button>
+      <p class="side-title">Herramientas</p>
       <button type="button" data-side-view="skins">🎨 Crear skin</button>
       <button type="button" data-side-view="potions">🧪 Recetas de pociones</button>
       <button type="button" data-side-view="tools">🧭 Herramientas MC Bedrock</button>
-      <button type="button" data-side-view="servers">🖥️ Servidores</button>
+      <p class="side-title">Preferencias</p>
+      <button type="button" data-side-view="settings">⚙️ Ajustes</button>
     </nav>
+    <div class="side-foot">Prizmothyn · Minecraft Bedrock<br>Sin cuentas ni sesiones</div>
   </aside>
 
+  <div class="app-body">
   <header class="topbar">
     <button class="menu-btn" id="menuBtn" type="button" title="Abrir menú" aria-label="Abrir menú">☰</button>
     <button class="brand" id="homeBtn" type="button" aria-label="Prizmothyn, catálogo"><img class="brand-title" src="icon/title.png" alt="Prizmothyn"></button>
@@ -2410,6 +2761,7 @@
     </section>
     <aside class="right"></aside>
   </main>
+  </div>
   <nav class="bottom-nav" aria-label="Navegación principal">
     <button type="button" data-app-view="addons" aria-label="Catálogo" title="Catálogo"><span class="bottom-icon" aria-hidden="true">🧩</span><span class="bottom-label">Catálogo</span></button>
     <button type="button" data-app-view="skins" aria-label="Crear skin" title="Crear skin"><span class="bottom-icon" aria-hidden="true">🎨</span><span class="bottom-label">Skins</span></button>
@@ -2533,13 +2885,14 @@
   ];
   var THEME_STORAGE_KEY = 'wl_theme_preferences';
   var THEME_PALETTES = {
-    light: { bg: '#f3f7f5', surface: '#ffffff', border: '#dce7e1' },
-    dark: { bg: '#070d18', surface: '#101b2e', border: '#1e2d47' },
-    'ultra-dark': { bg: '#020304', surface: '#080a0c', border: '#22292d' }
+    light: { bg: '#070a1c', surface: '#11163a', border: '#262d61' },
+    dark: { bg: '#0b0722', surface: '#18123f', border: '#322a68' },
+    'ultra-dark': { bg: '#04060f', surface: '#0d1029', border: '#1f2450' }
   };
   var THEME_DEFAULTS = {
+    v: 2,
     mode: 'light',
-    accent: '#087a55',
+    accent: '#8b5cf6',
     background: '',
     surface: '',
     border: '',
@@ -2847,7 +3200,9 @@
   function loadThemePreferences() {
     try {
       var saved = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY) || '{}');
+      if (!saved || saved.v !== THEME_DEFAULTS.v) return Object.assign({}, THEME_DEFAULTS);
       return {
+        v: THEME_DEFAULTS.v,
         mode: Object.prototype.hasOwnProperty.call(THEME_PALETTES, saved.mode) ? saved.mode : THEME_DEFAULTS.mode,
         accent: isValidHexColor(saved.accent) ? saved.accent : THEME_DEFAULTS.accent,
         background: isValidHexColor(saved.background) ? saved.background : '',
@@ -2906,13 +3261,14 @@
     root.style.setProperty('--panel', surface);
     root.style.setProperty('--panel-2', blendHexColor(surface, accent, 0.08));
     root.style.setProperty('--line', border);
-    root.style.setProperty('--text', lightSurface ? '#1d3027' : '#e8eefb');
-    root.style.setProperty('--muted', lightSurface ? '#65796f' : '#a0adba');
+    root.style.setProperty('--text', lightSurface ? '#1a1740' : '#eef1ff');
+    root.style.setProperty('--muted', lightSurface ? '#5f6592' : '#a8b0d8');
     root.style.setProperty('--brand', accent);
     root.style.setProperty('--brand-2', blendHexColor(accent, '#000000', 0.16));
     root.style.setProperty('--brand-dark', blendHexColor(accent, '#000000', 0.55));
     root.style.setProperty('--brand-rgb', accentRgb.r + ', ' + accentRgb.g + ', ' + accentRgb.b);
-    root.style.setProperty('--brand-on', (0.2126 * accentRgb.r + 0.7152 * accentRgb.g + 0.0722 * accentRgb.b) / 255 > 0.58 ? '#06211a' : '#ffffff');
+    root.style.setProperty('--accent-2', blendHexColor(accent, '#3b82f6', 0.35));
+    root.style.setProperty('--brand-on', (0.2126 * accentRgb.r + 0.7152 * accentRgb.g + 0.0722 * accentRgb.b) / 255 > 0.58 ? '#0b0722' : '#ffffff');
     root.style.setProperty('--ui-scale', themePrefs.size === 'low' ? '0.92' : (themePrefs.size === 'high' ? '1.08' : '1'));
     root.style.setProperty('--content-width', themePrefs.size === 'low' ? '1120px' : (themePrefs.size === 'high' ? '1440px' : '1280px'));
     root.style.setProperty('--scrollbar-thumb', blendHexColor(border, lightSurface ? '#000000' : '#ffffff', 0.12));
@@ -3604,7 +3960,12 @@
   // ─────────────────────────────────────────────────────────────────────
   //  Navegación
   // ─────────────────────────────────────────────────────────────────────
+  function isCompactNav_() {
+    return window.matchMedia('(max-width: 1024px)').matches;
+  }
+
   function openDrawer() {
+    if (!isCompactNav_()) return;
     $('#sideOverlay').classList.remove('hidden');
     var drawer = $('#sideDrawer');
     drawer.classList.add('open');
@@ -3614,8 +3975,20 @@
   function closeDrawer() {
     var drawer = $('#sideDrawer');
     drawer.classList.remove('open');
-    drawer.setAttribute('aria-hidden', 'true');
+    drawer.setAttribute('aria-hidden', isCompactNav_() ? 'true' : 'false');
     $('#sideOverlay').classList.add('hidden');
+  }
+
+  function syncDrawerA11y_() {
+    var drawer = $('#sideDrawer');
+    if (!drawer) return;
+    if (!isCompactNav_()) {
+      drawer.setAttribute('aria-hidden', 'false');
+      drawer.classList.remove('open');
+      $('#sideOverlay').classList.add('hidden');
+    } else if (!drawer.classList.contains('open')) {
+      drawer.setAttribute('aria-hidden', 'true');
+    }
   }
 
   function bindApp() {
@@ -4813,10 +5186,10 @@
           '<p>Elige cómo quieres ver la aplicación.</p>' +
           '<label class="settings-row" for="themeMode">' +
             '<span class="settings-row-label"><strong>Modo de color</strong>' +
-              '<span>Claro, oscuro o ultra oscuro</span></span>' +
+              '<span>Azul noche, morado noche o abismo</span></span>' +
             '<select id="themeMode" class="settings-select">' +
-              '<option value="light">Claro</option><option value="dark">Oscuro</option>' +
-              '<option value="ultra-dark">Ultra oscuro</option>' +
+              '<option value="light">Azul noche</option><option value="dark">Morado noche</option>' +
+              '<option value="ultra-dark">Abismo</option>' +
             '</select>' +
           '</label>' +
           '<label class="settings-row" for="accentColor">' +
@@ -5919,6 +6292,7 @@
             '<button class="btn primary" type="button" data-home-browse>Explorar catálogo</button>' +
           '</div>' +
         '</div>' +
+        '<div class="hero-visual" aria-hidden="true"><img src="icon/icon-192.png" alt=""></div>' +
       '</section>' +
       '<section class="catalog-filter-row" aria-label="Categorías del catálogo">' +
         '<span class="catalog-filter-label">Explorar por:</span>' +
@@ -5950,9 +6324,11 @@
     var view = $('#view');
     view.innerHTML = '<div class="addons-page">' +
       '<div class="card addons-hero">' +
-        '<div><h1>Catálogo de contenido</h1>' +
+        '<div class="hero-copy"><span class="catalog-eyebrow">Prizmothyn · MC Bedrock</span>' +
+        '<h1>Catálogo de contenido</h1>' +
         '<p>Explora todo el contenido publicado, descarga addons y guarda tus favoritos sin registrarte.</p></div>' +
         '<span class="addons-count" id="addonsCount"></span>' +
+        '<div class="hero-visual" aria-hidden="true"><img src="icon/icon-192.png" alt=""></div>' +
       '</div>' +
       '<section class="catalog-filter-row" aria-label="Filtrar por categoría">' +
         '<span class="catalog-filter-label">Categorías:</span>' +
@@ -6005,9 +6381,12 @@
   function renderSeedCatalog_() {
     var seeds = state.seeds;
     $('#view').innerHTML = '<div class="addons-page">' +
-      '<section class="card addons-hero"><div><h1>Semillas Bedrock</h1>' +
+      '<section class="card addons-hero">' +
+        '<div class="hero-copy"><span class="catalog-eyebrow">Prizmothyn · MC Bedrock</span>' +
+        '<h1>Semillas Bedrock</h1>' +
         '<p>Explora semillas publicadas, copia el valor exacto y encuentra lugares destacados con sus coordenadas.</p></div>' +
-        '<span class="addons-count">' + (seeds.items.length ? seeds.items.length + ' cargadas' : '') + '</span></section>' +
+        '<span class="addons-count">' + (seeds.items.length ? seeds.items.length + ' cargadas' : '') + '</span>' +
+        '<div class="hero-visual" aria-hidden="true"><img src="icon/icon-192.png" alt=""></div></section>' +
       '<section class="catalog-filter-row" aria-label="Filtrar por categoría">' +
         '<span class="catalog-filter-label">Categorías:</span>' +
         [ADDON_CATEGORY_ALL].concat(ADDON_CATEGORIES).map(function (category) {
@@ -7543,7 +7922,9 @@
     state.servers.image = '';
     state.servers.formOpen = false;
     $('#view').innerHTML = '<div class="addons-page"><div class="card addons-hero">' +
-      '<div><h1>Servidores Bedrock</h1><p>Descubre servidores disponibles. El estado y los jugadores se actualizan automáticamente.</p></div>' +
+      '<div class="hero-copy"><span class="catalog-eyebrow">Prizmothyn · MC Bedrock</span>' +
+      '<h1>Servidores Bedrock</h1><p>Descubre servidores disponibles. El estado y los jugadores se actualizan automáticamente.</p></div>' +
+      '<div class="hero-visual" aria-hidden="true"><img src="icon/icon-192.png" alt=""></div>' +
       '</div><div id="serversContent" class="addons-page">' + loadingBlock() + '</div></div>';
     try {
       var data = await api('guestGetServers');
@@ -8111,6 +8492,8 @@
       if (state.routeLock) return;
       handleHashRoute();
     });
+    window.addEventListener('resize', syncDrawerA11y_);
+    syncDrawerA11y_();
     showBoot();
     refreshAddonCategoryLists_(true);
     showApp();

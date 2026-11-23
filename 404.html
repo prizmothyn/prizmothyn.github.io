@@ -25,8 +25,8 @@
                         brand: {
                             purple: '#7c3aed',
                             indigo: '#4f46e5',
-                            cyan: '#06b6d4',
-                            emerald: '#10b981',
+                            cyan: '#4f8cff',
+                            emerald: '#8b5cf6',
                             dark: '#0a0a12',
                             card: 'rgba(18, 18, 30, 0.65)'
                         }
@@ -39,7 +39,7 @@
                     keyframes: {
                         pulseGlow: {
                             '0%': { boxShadow: '0 0 15px rgba(124, 58, 237, 0.3)' },
-                            '100%': { boxShadow: '0 0 35px rgba(124, 58, 237, 0.6), 0 0 15px rgba(6, 182, 212, 0.4)' }
+                            '100%': { boxShadow: '0 0 35px rgba(124, 58, 237, 0.6), 0 0 15px rgba(79, 140, 255, 0.4)' }
                         },
                         float: {
                             '0%, 100%': { transform: 'translateY(0px)' },
@@ -68,11 +68,11 @@
         }
         
         .glow-bg-2 {
-            background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(0,0,0,0) 70%);
+            background: radial-gradient(circle, rgba(79, 140, 255, 0.2) 0%, rgba(0,0,0,0) 70%);
         }
 
         .text-gradient {
-            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #34d399 100%);
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #c4b5fd 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -193,41 +193,7 @@
                         </div>
                     </div>
 
-                    <!-- Call to Action Banner -->
-                    <div class="text-center pt-2">
-                        <p class="text-sm sm:text-base text-slate-300 mb-6 font-medium">
-                            Para informarse de futuros proyectos o futuras creaciones sigan el canal oficial:
-                        </p>
-
-                        <!-- Buttons Wrapper -->
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center items-stretch">
-                            <!-- Direct WhatsApp Channel Link Button -->
-                            <a href="https://whatsapp.com/channel/0029VbEBUiSCHDynxetvd23p" 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               class="group relative inline-flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 transition-all duration-300 shadow-lg shadow-emerald-900/40 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98]">
-                                <i class="fa-brands fa-whatsapp text-2xl group-hover:rotate-12 transition-transform duration-300"></i>
-                                <span>Unirse al Canal de WhatsApp</span>
-                                <i class="fa-solid fa-arrow-right text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-
-                            <!-- Copy Link Button -->
-                            <button onclick="copyChannelLink()" 
-                                    id="copyBtn"
-                                    class="inline-flex items-center justify-center gap-2 px-5 py-4 rounded-xl font-medium text-slate-300 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:text-white transition-all duration-200 active:scale-[0.98]">
-                                <i class="fa-regular fa-copy text-base" id="copyIcon"></i>
-                                <span id="copyText">Copiar Enlace</span>
-                            </button>
-                        </div>
-                    </div>
-
                 </div>
-            </div>
-
-            <!-- Toast Notification for Copy Action -->
-            <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-emerald-500/50 text-emerald-400 px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 text-sm font-medium opacity-0 pointer-events-none transition-all duration-300 z-50">
-                <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-                <span>¡Enlace copiado al portapapeles!</span>
             </div>
 
         </div>
@@ -238,7 +204,7 @@
         <p>© JM-techStudios. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Simple Copy Script -->
+    <!-- Script de protección de la página -->
     <script>
         // Bloqueo de Clic Derecho (Anti-ContextMenu)
         document.addEventListener('contextmenu', function (e) {
@@ -287,36 +253,6 @@
             }
         });
 
-        function copyChannelLink() {
-            const url = "https://whatsapp.com/channel/0029VbEBUiSCHDynxetvd23p";
-            
-            // Copia directa al portapapeles en contexto de iframe / navegador
-            const tempInput = document.createElement("input");
-            tempInput.value = url;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-
-            // Update UI feedback
-            const toast = document.getElementById("toast");
-            const copyText = document.getElementById("copyText");
-            const copyIcon = document.getElementById("copyIcon");
-
-            copyText.textContent = "¡Copiado!";
-            copyIcon.className = "fa-solid fa-check text-emerald-400";
-
-            // Show Toast
-            toast.classList.remove("opacity-0", "pointer-events-none", "translate-y-2");
-            toast.classList.add("opacity-100", "translate-y-0");
-
-            setTimeout(() => {
-                toast.classList.remove("opacity-100", "translate-y-0");
-                toast.classList.add("opacity-0", "pointer-events-none", "translate-y-2");
-                copyText.textContent = "Copiar Enlace";
-                copyIcon.className = "fa-regular fa-copy";
-            }, 3000);
-        }
     </script>
 </body>
 </html>
