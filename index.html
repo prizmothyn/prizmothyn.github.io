@@ -2736,7 +2736,7 @@
       <p class="side-title">Preferencias</p>
       <button type="button" data-side-view="settings">⚙️ Ajustes</button>
     </nav>
-    <div class="side-foot">Prizmothyn · Minecraft Bedrock<br>Sin cuentas ni sesiones</div>
+    <div class="side-foot">Prizmothyn · Minecraft Bedrock</div>
   </aside>
 
   <div class="app-body">
@@ -3724,7 +3724,7 @@
   function assistantChatAction(action) {
     if (action === 'about') {
       assistantChatMessage(
-        'Prizmothyn es una web y PWA instalable para Minecraft Bedrock. Reúne catálogo de contenido, semillas, servidores y herramientas. Todo funciona sin registro: puedes explorar, descargar, guardar favoritos y publicar servidores.',
+        'Prizmothyn es una web y PWA instalable para Minecraft Bedrock. Reúne catálogo de contenido, semillas, servidores y herramientas. Puedes explorar, descargar y publicar servidores.',
         'assistant',
         [
           { action: 'catalog-info', label: 'Ver qué hay en el catálogo' },
@@ -3736,7 +3736,7 @@
     }
     if (action === 'catalog-info') {
       assistantChatMessage(
-        'El catálogo incluye texturas, addons, mapas, skins, scripts, versiones y semillas. Puedes buscar por nombre, filtrar categorías y ordenar por descargas, valoraciones o fecha. Abre una ficha para ver imágenes, versión, autor, descripción y enlace de descarga. Descargar y guardar favoritos no requieren registro.',
+        'El catálogo incluye texturas, addons, mapas, skins, scripts, versiones y semillas. Puedes buscar por nombre, filtrar categorías y ordenar por descargas, valoraciones o fecha. Abre una ficha para ver imágenes, versión, autor, descripción y enlace de descarga.',
         'assistant',
         [{ action: 'addons', label: 'Explorar catálogo' }, { action: 'install', label: 'Cómo instalar un addon' }]
       );
@@ -3772,7 +3772,7 @@
     }
     if (action === 'extras') {
       assistantChatMessage(
-        'Todo funciona sin registro. Puedes explorar el catálogo, usar las herramientas, guardar favoritos y publicar servidores. Si tienes una idea o encuentras un problema, usa las opciones de sugerencias o reporte.',
+        'Puedes explorar el catálogo, usar las herramientas y publicar servidores. Si tienes una idea o encuentras un problema, usa las opciones de sugerencias o reporte.',
         'assistant',
         [{ action: 'suggestion', label: 'Enviar sugerencia' }, { action: 'report-error', label: 'Reportar un error' }]
       );
@@ -5253,7 +5253,7 @@
         '</section>' +
         '<section class="card settings-card">' +
           '<h2>Ayuda y reportes</h2>' +
-          '<p>Envía errores o sugerencias al equipo. No hace falta registrarse y el envío es privado.</p>' +
+          '<p>Envía errores o sugerencias al equipo. El envío es privado.</p>' +
           '<form data-report-form>' +
             '<label class="field"><span>Tipo</span><select id="reportType">' +
               '<option value="error">Error de la aplicación</option>' +
@@ -6287,7 +6287,7 @@
         '<div class="catalog-masthead-copy">' +
           '<span class="catalog-eyebrow">Prizmothyn · MC Bedrock</span>' +
           '<h1>Encuentra tu próxima aventura</h1>' +
-          '<p>Explora todo el contenido publicado, descarga addons y guarda tus favoritos sin registrarte.</p>' +
+          '<p>Explora todo el contenido publicado y descarga addons.</p>' +
           '<div class="catalog-masthead-actions">' +
             '<button class="btn primary" type="button" data-home-browse>Explorar catálogo</button>' +
           '</div>' +
@@ -6326,7 +6326,7 @@
       '<div class="card addons-hero">' +
         '<div class="hero-copy"><span class="catalog-eyebrow">Prizmothyn · MC Bedrock</span>' +
         '<h1>Catálogo de contenido</h1>' +
-        '<p>Explora todo el contenido publicado, descarga addons y guarda tus favoritos sin registrarte.</p></div>' +
+        '<p>Explora todo el contenido publicado y descarga addons.</p></div>' +
         '<span class="addons-count" id="addonsCount"></span>' +
         '<div class="hero-visual" aria-hidden="true"><img src="icon/icon-192.png" alt=""></div>' +
       '</div>' +
