@@ -132,6 +132,9 @@
   }
   .status a { font-weight: 800; }
   .footer { margin-top: 18px; text-align: center; color: var(--muted); font-size: 12px; }
+  .hidden { display: none !important; }
+  .native-ad-slot { margin: 18px auto 0; max-width: 360px; text-align: center; }
+  .native-ad-label { margin: 0 0 6px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
   @media (max-width: 640px) {
     .wrap { padding: 14px 12px 48px; }
     .detail { padding: 15px; }
@@ -225,6 +228,22 @@
       <div class="state"><div class="spinner"></div><h1>Cargando addon…</h1></div>
     </main>
     <p class="footer">Prizmothyn · Catálogo de complementos para Minecraft Bedrock</p>
+    <aside id="nativeAdSlot" class="native-ad-slot" aria-label="Publicidad">
+      <p class="native-ad-label">Publicidad</p>
+      <div id="container-ac948c0f2454963e9e7dc63d348aa63b" class="native-ad-content"></div>
+    </aside>
+    <script async fetchpriority="high" data-cfasync="false" src="https://bauval.org/21/ac948c0f2454963e9e7dc63d348aa63b"></script>
+    <script>
+    (function () {
+      var slot = document.getElementById('nativeAdSlot');
+      var container = document.getElementById('container-ac948c0f2454963e9e7dc63d348aa63b');
+      if (!slot || !container) return;
+      window.setTimeout(function () {
+        if (!container.childElementCount) slot.classList.add('hidden');
+      }, 12000);
+    })();
+    </script>
+    <script data-cfasync="false" src="https://abscloud.org/1/386718eabd6160140c4b84b214b8042c"></script>
   </div>
 
 <script>
