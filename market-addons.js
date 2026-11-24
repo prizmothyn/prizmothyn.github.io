@@ -269,7 +269,9 @@
   }
   async function loadKeys() {
     if (state.owned) return state.owned;
-    var r = await fetch(KEYS_URL, { credentials: 'omit', cache: 'no-store' });
+    // Las claves son ~1,2 MB y el servidor puede tardar: se piden una sola vez
+    // por página y se deja que el navegador/CDN aplique su caché HTTP.
+    var r = await fetch(KEYS_URL, { credentials: 'omit' });
     if (!r.ok) throw new Error('No se pudieron cargar las claves (HTTP ' + r.status + ')');
     var key = r.headers.get('X-Decryption-Key') || r.headers.get('x-decryption-key') || '';
     var buf = await r.arrayBuffer();

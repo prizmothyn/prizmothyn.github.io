@@ -124,6 +124,12 @@
   .download-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(var(--brand-rgb), .3); }
   .download-btn:disabled { opacity: .6; cursor: wait; transform: none; }
   .status { margin-top: 14px; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+  .status.busy { display: flex; align-items: center; gap: 8px; }
+  .status.busy::before {
+    content: ''; flex: 0 0 12px; width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid rgba(var(--brand-rgb), .2); border-top-color: var(--brand);
+    animation: spin .8s linear infinite;
+  }
   .status a { font-weight: 800; }
   .footer { margin-top: 18px; text-align: center; color: var(--muted); font-size: 12px; }
   @media (max-width: 640px) {
@@ -137,8 +143,7 @@
   <script>
   (function () {
     'use strict';
-    // Unica preferencia de tema compartida con index.html.
-    var THEME_STORAGE_KEY = 'wl_theme_preferences';
+    // Tema por defecto: la ficha no lee ni escribe almacenamiento local.
     var THEME_PALETTES = {
       light: { bg: '#070a1c', surface: '#11163a', border: '#262d61' },
       dark: { bg: '#0b0722', surface: '#18123f', border: '#322a68' },
@@ -152,23 +157,10 @@
     function isValidHexColor(value) {
       return /^#[0-9a-f]{6}$/i.test(String(value || ''));
     }
+    // Esta ficha es independiente y no escribe almacenamiento local: usa el tema
+    // por defecto y recibe solo el idioma por URL (Parámetro `lang`).
     function loadThemePreferences() {
-      try {
-        var saved = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY) || '{}');
-        if (!saved || saved.v !== THEME_DEFAULTS.v) return Object.assign({}, THEME_DEFAULTS);
-        return {
-          v: THEME_DEFAULTS.v,
-          mode: Object.prototype.hasOwnProperty.call(THEME_PALETTES, saved.mode) ? saved.mode : THEME_DEFAULTS.mode,
-          accent: isValidHexColor(saved.accent) ? saved.accent : THEME_DEFAULTS.accent,
-          background: isValidHexColor(saved.background) ? saved.background : '',
-          surface: isValidHexColor(saved.surface) ? saved.surface : '',
-          border: isValidHexColor(saved.border) ? saved.border : '',
-          size: ['low', 'medium', 'high'].indexOf(saved.size) >= 0 ? saved.size : THEME_DEFAULTS.size,
-          radius: ['small', 'medium', 'large'].indexOf(saved.radius) >= 0 ? saved.radius : THEME_DEFAULTS.radius
-        };
-      } catch (e) {
-        return Object.assign({}, THEME_DEFAULTS);
-      }
+      return Object.assign({}, THEME_DEFAULTS);
     }
     function hexToRgb(hex) {
       var value = String(hex).replace('#', '');
@@ -218,9 +210,6 @@
       if (meta) meta.setAttribute('content', background);
     }
     applySharedTheme();
-    window.addEventListener('storage', function (e) {
-      if (e.key === THEME_STORAGE_KEY || e.key === null) applySharedTheme();
-    });
   })();
   </script>
 </head>
@@ -261,7 +250,7 @@
   var rawId = idParam.indexOf('market:') === 0 ? idParam.slice(7)
     : idParam.indexOf('app:') === 0 ? idParam.slice(4) : idParam;
   var item = null;
-  var worker = null, workerSeq = 0;
+  var worker = null, workerSeq = 0, keysPromise = null;
   var pending = new Map();
 
   function $(s) { return document.querySelector(s); }
@@ -337,17 +326,12 @@
     };
   }
 
-  var GUEST_ID_KEY = 'wl_guest_id';
+  // ID.html no usa localStorage: el guestId solo se necesita mientras la ficha
+  // está abierta (lectura de descripciones), así que se genera en memoria.
   function getOrCreateGuestId_() {
-    var id = '';
-    try { id = localStorage.getItem(GUEST_ID_KEY) || ''; } catch (e) {}
-    if (!/^g_[A-Za-z0-9_-]{8,64}$/.test(id)) {
-      id = 'g_' + ((window.crypto && crypto.randomUUID)
-        ? crypto.randomUUID().replace(/-/g, '')
-        : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
-      try { localStorage.setItem(GUEST_ID_KEY, id); } catch (e) {}
-    }
-    return id;
+    return 'g_' + ((window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID().replace(/-/g, '')
+      : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
   }
   var guestId = getOrCreateGuestId_();
 
@@ -457,7 +441,15 @@
     });
   }
   function $$(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
-  function status(text) { var el = $('#status'); if (el) el.textContent = text || ''; }
+  function status(text) {
+    var el = $('#status');
+    if (!el) return;
+    el.textContent = text || '';
+    el.classList.toggle('busy', !!text);
+  }
+  function pause(ms) {
+    return new Promise(function (resolve) { window.setTimeout(resolve, ms); });
+  }
 
   function getWorker() {
     if (worker) return worker;
@@ -483,15 +475,50 @@
       w.postMessage({ id: id, type: type, payload: payload }, transfer || []);
     });
   }
+  // Las claves pesan ~1,2 MB y el servidor puede ser lento: se cargan una sola
+  // vez por página y se aprovecha la caché HTTP del navegador/CDN.
   async function loadKeys() {
-    var r = await fetch(KEYS_URL, { credentials: 'omit', cache: 'no-store' });
-    if (!r.ok) throw new Error('No se pudieron cargar las claves (HTTP ' + r.status + ')');
-    var key = r.headers.get('X-Decryption-Key') || r.headers.get('x-decryption-key') || '';
-    var buf = await r.arrayBuffer();
-    var res = await callWorker('LOAD_KEYS_ENCRYPTED', { encryptedBuffer: buf, key: key }, [buf]);
-    var set = new Set();
-    (res.payload.ownedUuids || []).forEach(function (id) { set.add(String(id).trim().toLowerCase()); });
-    return set;
+    if (keysPromise) return keysPromise;
+    keysPromise = (async function () {
+      status('Obteniendo claves de descarga…');
+      var slow = window.setTimeout(function () {
+        status('El servidor de claves está tardando más de lo normal…');
+      }, 5000);
+      try {
+        var r = await fetch(KEYS_URL, { credentials: 'omit' });
+        if (!r.ok) throw new Error('No se pudieron cargar las claves (HTTP ' + r.status + ')');
+        var key = r.headers.get('X-Decryption-Key') || r.headers.get('x-decryption-key') || '';
+        status('Preparando motor de descarga…');
+        var buf = await r.arrayBuffer();
+        var res = await callWorker('LOAD_KEYS_ENCRYPTED', { encryptedBuffer: buf, key: key }, [buf]);
+        var set = new Set();
+        (res.payload.ownedUuids || []).forEach(function (id) { set.add(String(id).trim().toLowerCase()); });
+        return set;
+      } catch (e) {
+        keysPromise = null;
+        throw e;
+      } finally {
+        window.clearTimeout(slow);
+      }
+    })();
+    return keysPromise;
+  }
+
+  function progressText(p) {
+    p = p || {};
+    var prefix = p.part && p.totalParts > 1 ? '[Parte ' + p.part + '/' + p.totalParts + '] ' : '';
+    if (p.stage === 'connecting') return prefix + 'Conectando con el servidor de archivos…';
+    if (p.stage === 'downloading') {
+      var mb = (Number(p.receivedBytes || 0) / 1048576).toFixed(1);
+      var total = p.totalBytes ? ' / ' + (Number(p.totalBytes) / 1048576).toFixed(1) + ' MB' : '';
+      var pct = p.percent ? ' · ' + Math.round(p.percent) + '%' : '';
+      var speed = p.speedBytesPerSec
+        ? ' · ' + (Number(p.speedBytesPerSec) / 1048576).toFixed(2) + ' MB/s'
+        : '';
+      return prefix + 'Descargando ' + mb + ' MB' + total + pct + speed;
+    }
+    if (p.stage === 'decrypting') return prefix + 'Descifrando y preparando el archivo…';
+    return prefix + (p.message || 'Procesando…');
   }
   function filenameFromUrl(url, name) {
     try {
@@ -513,13 +540,14 @@
     document.body.appendChild(trigger); trigger.click(); trigger.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
     var el = $('#status');
+    if (el) el.classList.remove('busy');
     if (el) el.innerHTML = 'Descarga lista: ' + esc(filename) +
       ' · <a href="' + esc(url) + '" download="' + esc(filename) + '">💾 Guardar de nuevo</a>';
   }
   async function downloadApp() {
     var url = item.urlDescarga;
     if (!url) throw new Error('Este contenido no tiene enlace de descarga.');
-    status('Descargando contenido…');
+    status('Verificando el archivo en el servidor…');
     try {
       var data = await api('downloadFile', { id: rawId, url: url });
       var bytes = base64ToBytes(data.base64 || '');
@@ -541,22 +569,32 @@
     var needsProxy = urls.some(function (u) { return /xboxlive\.com/i.test(u); });
     var prefixes = needsProxy ? ['https://toolcoin.site/api/proxy.php'] : ['', 'https://toolcoin.site/api/proxy.php'];
     for (var i = 0; i < prefixes.length; i++) {
-      status((i && !needsProxy) ? 'Conexión directa bloqueada, usando proxy…' : 'Descargando y descifrando…');
+      status((i && !needsProxy) ? 'Conexión directa bloqueada, usando proxy…' : 'Conectando con el servidor de archivos…');
+      var firstProgress = true;
+      var slow = window.setTimeout(function () {
+        status('La conexión con el servidor de archivos está tardando…');
+      }, 5000);
       try {
         res = await callWorker('DOWNLOAD_AND_PROCESS', {
           downloadUrls: urls, title: item.nombre, variantLabel: '', proxyPrefix: prefixes[i]
         }, [], function (p) {
-          status((p.message || p.stage || 'Procesando…') + (p.percent ? ' (' + Math.round(p.percent) + '%)' : ''));
+          if (firstProgress) { firstProgress = false; window.clearTimeout(slow); }
+          status(progressText(p));
         });
         break;
       } catch (err) { lastError = err; }
+      finally { window.clearTimeout(slow); }
     }
     if (!res) throw lastError || new Error('No se pudo descargar el archivo');
+    status('Descarga completada, guardando archivo…');
+    await pause(150);
     saveBlob(res.payload.data, res.payload.filename || (item.nombre + '.zip'));
   }
   async function download() {
     var btn = $('#downloadBtn');
     if (btn) btn.disabled = true;
+    status('Verificando conexión con el servidor…');
+    await pause(150);
     try {
       if (source === 'app') await downloadApp();
       else await downloadMarket();
