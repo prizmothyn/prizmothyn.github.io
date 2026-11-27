@@ -254,6 +254,35 @@
     var d = new Date(v);
     return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
   }
+
+  function isVersionesItem_(it) {
+    return String((it && it.categoria) || '').trim().toLowerCase() === 'versiones';
+  }
+  function versionesViewActive_() {
+    var hash = String(window.location.hash || '').replace(/^#/, '').split('?')[0].toLowerCase();
+    return hash === 'versiones' || String(state.cat || '').trim().toLowerCase() === 'versiones';
+  }
+  function versionScore_(value) {
+    var parts = String(value || '').match(/\d+/g) || [];
+    return parts.reduce(function (score, part) {
+      return score * 1000 + Math.min(999, Number(part) || 0);
+    }, 0);
+  }
+  function latestVersionId_() {
+    var best = '', bestTime = -Infinity, bestVersion = -Infinity;
+    state.all.forEach(function (it) {
+      if (!isVersionesItem_(it)) return;
+      var parsed = Date.parse(String(it.fecha || ''));
+      var time = isFinite(parsed) ? parsed : 0;
+      var version = versionScore_(it.version);
+      if (time > bestTime || (time === bestTime && version > bestVersion)) {
+        best = it.id;
+        bestTime = time;
+        bestVersion = version;
+      }
+    });
+    return best;
+  }
   function localText(v) {
     if (!v || typeof v !== 'object') return '';
     var keys = Object.keys(v);
@@ -690,14 +719,17 @@
     catch (e) { return 'es'; }
   }
 
-  function cardHTML(it) {
+  function cardHTML(it, newVersionId) {
     var detailUrl = 'ID.html?ID=' + encodeURIComponent(it.id) +
       '&lang=' + descriptionLangParam();
     return '<article class="addon-card">' +
       '<a class="addon-card-open" data-u-card="' + esc(it.id) + '" href="' + esc(detailUrl) + '">' +
         '<div class="addon-cover"><div class="addon-cover-fallback" aria-hidden="true">🧩</div>' +
           (it.imagen ? '<img src="' + it.imagen + '" alt="' + esc(it.nombre) + '" loading="lazy" ' +
-            'onerror="this.onerror=null;this.style.display=\'none\'">' : '') + '</div>' +
+            'onerror="this.onerror=null;this.style.display=\'none\'">' : '') +
+          (newVersionId && it.id === newVersionId
+            ? '<span class="new-version-badge" title="Última versión publicada">Nueva Version</span>'
+            : '') + '</div>' +
         '<span class="addon-body">' +
           '<span class="addon-title">' + esc(it.nombre) + '</span>' +
           '<span class="addon-meta"><span class="addon-chip">' + esc(it.categoria || 'Contenido') + '</span>' +
@@ -773,6 +805,7 @@
     }
 
     applyFilters();
+    var newVersionId = versionesViewActive_() ? latestVersionId_() : '';
     var start = state.page * PAGE_SIZE;
     var slice = state.visible.slice(start, start + PAGE_SIZE);
     if (!slice.length) {
@@ -788,7 +821,7 @@
       });
       grid.innerHTML = '';
       slice.forEach(function (it, i) {
-        grid.insertAdjacentHTML('beforeend', cardHTML(it));
+        grid.insertAdjacentHTML('beforeend', cardHTML(it, newVersionId));
         var position = i + 1;
         if (position % AD_EVERY !== 0) return;
         var slot = existingSlots[String(position)] || createInlineAdSlot(position, adListKey);

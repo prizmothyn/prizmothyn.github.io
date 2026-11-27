@@ -40,13 +40,17 @@ Al elegir una categoría cambia el hash sin recargar la página. Al volver de un
 * Botón **🎲 Mezclar** para cambiar el orden aleatorio.
 * Paginación y tarjetas enlazadas directamente a su ficha `ID.html`.
 
+### Versión más reciente
+
+En `#versiones` (y solo en esa categoría), la publicación con la fecha más reciente muestra en la esquina superior izquierda de su imagen una insignia amarilla **Nueva Version**. El catálogo completo y las demás categorías no la muestran.
+
 ### Cantidades exactas
 
 El encabezado y el menú lateral muestran el total exacto de contenidos (propios + Store), sin el antiguo `48+`.
 
 El menú lateral incluye puntos de estado con cantidades reales:
 
-* **Verde**: addons del Store y addons propios actuales.
+* **Verde**: addons de la Store y addons propios actuales.
 * **Amarillo**: actualizados hoy.
 * **Verde lima claro**: nuevos hoy.
 * **Rojo**: eliminados.
@@ -162,7 +166,7 @@ En `ID.html` el idioma viaja por query string (`&lang=es` o `&lang=en`) porque e
 ## 6. PWA e instalación
 
 * `manifest.json`: nombre **Prizmothyn**, `start_url: ./index.html#catalogo`, modo `standalone` e iconos en `icon/`.
-* Service Worker `prizmothyn-v17` (`sw.js`):
+* Service Worker `prizmothyn-v18` (`sw.js`):
   * `APP_SHELL` incluye `index.html`, `ID.html`, `manifest.json`, `market-addons.js`, el worker/WASM del Store y los iconos.
   * Caché de runtime y caché de catálogo separadas.
   * `stale-while-revalidate` para el shell y `networkFirst` para contenido.
