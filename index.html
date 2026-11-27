@@ -2441,8 +2441,9 @@
     background: linear-gradient(135deg, rgba(var(--ui-accent-rgb), .32), rgba(var(--ui-cyan-rgb), .24));
     box-shadow: 0 8px 20px rgba(var(--ui-accent-rgb), .14);
   }
-  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 11px; line-height: 1.5; }
-  .side-stats { display: flex; flex-direction: column; gap: 3px; padding: 2px 10px 8px; }
+  .side-bottom { margin-top: auto; }
+  .side-foot { padding: 10px 10px 0; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 11px; line-height: 1.5; }
+  .side-stats { display: flex; flex-direction: column; gap: 3px; padding: 2px 10px 6px; }
   .side-stat { display: flex; align-items: center; gap: 8px; min-height: 24px; color: var(--ui-muted); font-size: 11px; }
   .side-stat b { margin-left: auto; color: var(--ui-text); font-variant-numeric: tabular-nums; }
   .side-stat .dot { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
@@ -2729,6 +2730,14 @@
       <p class="side-title">Explorar</p>
       <button type="button" data-side-view="addons">🧩 Catálogo</button>
       <button type="button" data-side-view="servers">🖥️ Servidores</button>
+      <p class="side-title">Herramientas</p>
+      <button type="button" data-side-view="skins">🎨 Crear skin</button>
+      <button type="button" data-side-view="potions">🧪 Recetas de pociones</button>
+      <button type="button" data-side-view="tools">🧭 Herramientas MC Bedrock</button>
+      <p class="side-title">Preferencias</p>
+      <button type="button" data-side-view="settings">⚙️ Ajustes</button>
+    </nav>
+    <div class="side-bottom">
       <p class="side-title">Estado del catálogo</p>
       <div class="side-stats" id="sideCatalogStats" aria-label="Cantidades exactas del catálogo">
         <span class="side-stat"><i class="dot dot-current"></i>Marketplace <b data-stat-value="market">…</b></span>
@@ -2737,14 +2746,8 @@
         <span class="side-stat"><i class="dot dot-new"></i>Nuevos hoy <b data-stat-value="new">…</b></span>
         <span class="side-stat"><i class="dot dot-removed"></i>Eliminados <b data-stat-value="removed">…</b></span>
       </div>
-      <p class="side-title">Herramientas</p>
-      <button type="button" data-side-view="skins">🎨 Crear skin</button>
-      <button type="button" data-side-view="potions">🧪 Recetas de pociones</button>
-      <button type="button" data-side-view="tools">🧭 Herramientas MC Bedrock</button>
-      <p class="side-title">Preferencias</p>
-      <button type="button" data-side-view="settings">⚙️ Ajustes</button>
-    </nav>
-    <div class="side-foot">Prizmothyn · Minecraft Bedrock · <span id="catalogExactTotal">…</span> complementos</div>
+      <div class="side-foot">Prizmothyn · Minecraft Bedrock · <span id="catalogExactTotal">…</span> complementos</div>
+    </div>
   </aside>
 
   <div class="app-body">
