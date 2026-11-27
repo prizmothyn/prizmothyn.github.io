@@ -27,8 +27,18 @@
     Addon: 'Addons', Mashup: 'Addons', World: 'Mapas', SkinPack: 'Skins',
     TexturePack: 'Texturas', DLC: 'Versiones', Server: 'Scripts', Persona: 'Skins'
   };
+  // #addons es alias del catálogo completo; la categoría Addons usa #complementos.
+  var CATEGORY_LABEL_BY_HASH = {
+    texturas: 'Texturas', complementos: 'Addons', mapas: 'Mapas', skins: 'Skins',
+    scripts: 'Scripts', versiones: 'Versiones', semillas: 'Semillas'
+  };
+  var CATEGORY_HASH_BY_LABEL = {
+    Texturas: 'texturas', Addons: 'complementos', Mapas: 'mapas', Skins: 'skins',
+    Scripts: 'scripts', Versiones: 'versiones', Semillas: 'semillas'
+  };
 
   var VIEW_KEY = 'prizmothyn_catalog_view_v1';
+  var STATS_KEY = 'prizmothyn_catalog_stats_v1';
 
   var state = {
     q: '', cat: '', page: 0,
@@ -43,6 +53,66 @@
 
   var worker = null, workerSeq = 0;
   var pending = new Map();
+
+  // Estadísticas que consume el menú lateral: totales exactos y cambios de hoy.
+  window.PrizmothynCatalog = { getStats: function () { return getStats(); } };
+
+  function todayKey_() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+      '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function readStats_() {
+    var empty = { date: todayKey_(), newIds: [], updatedIds: [], removed: 0 };
+    try {
+      var s = JSON.parse(localStorage.getItem(STATS_KEY) || 'null');
+      if (!s || s.date !== empty.date) return empty;
+      return {
+        date: s.date,
+        newIds: Array.isArray(s.newIds) ? s.newIds : [],
+        updatedIds: Array.isArray(s.updatedIds) ? s.updatedIds : [],
+        removed: Number(s.removed) || 0
+      };
+    } catch (e) { return empty; }
+  }
+  function writeStats_(stats) {
+    try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch (e) { /* sin espacio */ }
+  }
+  function getStats() {
+    var saved = readStats_();
+    var app = 0, market = 0;
+    state.all.forEach(function (it) {
+      if (it.source === 'market') market++; else app++;
+    });
+    return {
+      total: state.all.length,
+      app: app,
+      market: market,
+      newToday: saved.newIds.length,
+      updatedToday: saved.updatedIds.length,
+      removed: saved.removed
+    };
+  }
+  function publishStats() {
+    try {
+      if (typeof window.CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('prizmothyn:catalogstats', { detail: getStats() }));
+      }
+    } catch (e) { /* evento solo informativo */ }
+  }
+  function recordSyncStats_(added, updated, removed) {
+    var saved = readStats_();
+    var news = new Set(saved.newIds);
+    var ups = new Set(saved.updatedIds);
+    var gone = new Set((removed || []).map(function (id) { return String(id); }));
+    (added || []).forEach(function (it) { news.add(it.id); ups.delete(it.id); });
+    (updated || []).forEach(function (it) { ups.add(it.id); });
+    gone.forEach(function (id) { news.delete(id); ups.delete(id); });
+    saved.newIds = Array.from(news);
+    saved.updatedIds = Array.from(ups);
+    saved.removed = saved.removed + gone.size;
+    writeStats_(saved);
+  }
 
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
@@ -470,6 +540,7 @@
     state.cacheIndex = buildIndex(ordered);
     state.fromCache = !!fromCache;
     state.lastSyncAt = savedAt || Date.now();
+    publishStats();
     state.loading = false;
     state.progress = '';
     render();
@@ -548,6 +619,7 @@
       if (!total && !removed.length) {
         state.lastSyncAt = Date.now();
         setSyncNote('Catálogo al día');
+        publishStats();
         signal('sync-done', 0, { label: 'sin cambios' });
         return;
       }
@@ -558,6 +630,7 @@
       removed.forEach(function (id) { byId.delete(id); });
       var merged = Array.from(byId.values());
 
+      recordSyncStats_(added, updated, removed);
       commit(merged, false, Date.now());
       await writeCatalogCache(merged);
 
@@ -766,8 +839,27 @@
       }
     });
     document.addEventListener('change', function (e) {
-      if (e.target.id === 'uCategory') { state.cat = e.target.value; state.page = 0; saveView(); render(); }
+      if (e.target.id === 'uCategory') {
+        // El hash y el estado de la app se sincronizan en un solo sitio.
+        window.dispatchEvent(new CustomEvent('prizmothyn:categorychange', {
+          detail: { category: e.target.value }
+        }));
+      }
     });
+    function applyCategoryFromApp_(e) {
+      var label = String((e.detail && e.detail.category) || '');
+      var next = CATEGORY_HASH_BY_LABEL[label] || 'catalogo';
+      var wanted = next === 'catalogo' ? '' : label;
+      if (state.cat !== wanted) {
+        state.cat = wanted;
+        state.page = 0;
+        saveView();
+        render();
+      }
+      var sel = $('#uCategory');
+      if (sel) sel.value = wanted;
+    }
+    window.addEventListener('prizmothyn:categorychange', applyCategoryFromApp_);
     var target = $('#view') || document.body;
     new MutationObserver(function () {
       if (ensureToolbar()) render();
@@ -791,6 +883,9 @@
 
   function init() {
     restoreView();
+    var initialHash = String(window.location.hash || '').replace(/^#/, '');
+    if (CATEGORY_LABEL_BY_HASH[initialHash]) state.cat = CATEGORY_LABEL_BY_HASH[initialHash];
+    else if (initialHash === 'catalogo' || initialHash === 'addons' || !initialHash) state.cat = '';
     bind();
     var tries = 0;
     var timer = setInterval(function () {

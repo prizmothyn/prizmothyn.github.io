@@ -2442,6 +2442,14 @@
     box-shadow: 0 8px 20px rgba(var(--ui-accent-rgb), .14);
   }
   .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 11px; line-height: 1.5; }
+  .side-stats { display: flex; flex-direction: column; gap: 3px; padding: 2px 10px 8px; }
+  .side-stat { display: flex; align-items: center; gap: 8px; min-height: 24px; color: var(--ui-muted); font-size: 11px; }
+  .side-stat b { margin-left: auto; color: var(--ui-text); font-variant-numeric: tabular-nums; }
+  .side-stat .dot { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+  .dot-current { color: #22c55e; background: #22c55e; }
+  .dot-updated { color: #eab308; background: #eab308; }
+  .dot-new { color: #a3e635; background: #a3e635; }
+  .dot-removed { color: #ef4444; background: #ef4444; }
   .side-overlay { display: none; }
 
   .topbar {
@@ -2721,6 +2729,14 @@
       <p class="side-title">Explorar</p>
       <button type="button" data-side-view="addons">🧩 Catálogo</button>
       <button type="button" data-side-view="servers">🖥️ Servidores</button>
+      <p class="side-title">Estado del catálogo</p>
+      <div class="side-stats" id="sideCatalogStats" aria-label="Cantidades exactas del catálogo">
+        <span class="side-stat"><i class="dot dot-current"></i>Marketplace <b data-stat-value="market">…</b></span>
+        <span class="side-stat"><i class="dot dot-current"></i>Complementos propios <b data-stat-value="app">…</b></span>
+        <span class="side-stat"><i class="dot dot-updated"></i>Actualizados hoy <b data-stat-value="updated">…</b></span>
+        <span class="side-stat"><i class="dot dot-new"></i>Nuevos hoy <b data-stat-value="new">…</b></span>
+        <span class="side-stat"><i class="dot dot-removed"></i>Eliminados <b data-stat-value="removed">…</b></span>
+      </div>
       <p class="side-title">Herramientas</p>
       <button type="button" data-side-view="skins">🎨 Crear skin</button>
       <button type="button" data-side-view="potions">🧪 Recetas de pociones</button>
@@ -2728,7 +2744,7 @@
       <p class="side-title">Preferencias</p>
       <button type="button" data-side-view="settings">⚙️ Ajustes</button>
     </nav>
-    <div class="side-foot">Prizmothyn · Minecraft Bedrock</div>
+    <div class="side-foot">Prizmothyn · Minecraft Bedrock · <span id="catalogExactTotal">…</span> complementos</div>
   </aside>
 
   <div class="app-body">
@@ -2867,6 +2883,7 @@
   window.addEventListener('prizmothyn:catalog', function (e) {
     var d = e.detail || {};
     if (d.type === 'ready' || d.type === 'cached' || d.type === 'error') finishBoot();
+    renderSideCatalogStats_();
   });
 
   var CACHE_ADDON_CATEGORY_COUNTS_KEY = 'wl_addon_category_counts';
@@ -3346,7 +3363,12 @@
         path === 'profile' || path.indexOf('profile/') === 0) {
       return { view: 'addons', userId: '' };
     }
-    if (path === 'addons') return { view: 'addons', userId: '', category: params.category || '' };
+    if (path === 'catalogo' || path === 'addons') {
+      return { view: 'addons', userId: '', category: params.category || '' };
+    }
+    if (CATEGORY_ID_BY_HASH[path]) {
+      return { view: 'addons', userId: '', category: CATEGORY_ID_BY_HASH[path] };
+    }
     if (path === 'skins') return { view: 'skins', userId: '' };
     if (path === 'potions') return { view: 'potions', userId: '' };
     if (path === 'tools') return { view: 'tools', userId: '' };
@@ -3355,18 +3377,64 @@
     return { view: 'addons', userId: '' };
   }
 
+  // El catálogo completo vive en #catalogo; cada categoría tiene su propio hash
+  // (#mapas, #versiones, #texturas...). #addons sigue siendo alias del catálogo,
+  // por eso la categoría "Addons" usa #complementos.
+  var CATEGORY_HASH_BY_ID = {
+    texturas: 'texturas', addons: 'complementos', mapas: 'mapas', skins: 'skins',
+    scripts: 'scripts', versiones: 'versiones', semillas: 'semillas'
+  };
+  var CATEGORY_ID_BY_HASH = {
+    texturas: 'texturas', complementos: 'addons', mapas: 'mapas', skins: 'skins',
+    scripts: 'scripts', versiones: 'versiones', semillas: 'semillas'
+  };
+  var CATEGORY_LABEL_BY_ID = {
+    texturas: 'Texturas', addons: 'Addons', mapas: 'Mapas', skins: 'Skins',
+    scripts: 'Scripts', versiones: 'Versiones', semillas: 'Semillas'
+  };
+  var CATEGORY_ID_BY_LABEL = {
+    Texturas: 'texturas', Addons: 'addons', Mapas: 'mapas', Skins: 'skins',
+    Scripts: 'scripts', Versiones: 'versiones', Semillas: 'semillas'
+  };
+  function catalogHash_(category) {
+    var id = String(category || '');
+    if (!id || id === 'catalogo') return '#catalogo';
+    return '#' + (CATEGORY_HASH_BY_ID[id] || 'catalogo');
+  }
+  // El catálogo unificado avisa cuando cambia de categoría; el hash, el menú
+  // y los botones de categoría se ajustan sin recargar ni perder el orden.
+  function announceCatalogCategory_(category) {
+    var label = CATEGORY_LABEL_BY_ID[String(category || '')] ||
+      (String(category || '') === 'catalogo' ? '' : String(category || ''));
+    window.dispatchEvent(new CustomEvent('prizmothyn:categorychange', { detail: { category: label } }));
+  }
+  window.addEventListener('prizmothyn:categorychange', function (e) {
+    var label = String((e.detail && e.detail.category) || '');
+    var id = CATEGORY_ID_BY_LABEL[label] || 'catalogo';
+    if (state.addons.category !== id) {
+      state.addons.category = id;
+      $all('[data-addon-category]').forEach(function (button) {
+        button.setAttribute('aria-pressed', button.dataset.addonCategory === id ? 'true' : 'false');
+      });
+    }
+    if (window.location.hash !== catalogHash_(id)) history.replaceState(null, '', catalogHash_(id));
+  });
   function routeToHash(view) {
-    if (view === 'addons' || view === 'home') return 'addons';
+    if (view === 'addons' || view === 'home') return 'catalogo';
     if (view === 'skins') return 'skins';
     if (view === 'potions') return 'potions';
     if (view === 'tools') return 'tools';
     if (view === 'servers') return 'servers';
     if (view === 'settings') return 'settings';
-    return 'addons';
+    return 'catalogo';
   }
 
   function syncHash(view, opts) {
-    var nextHash = '#' + routeToHash(view, opts || {});
+    opts = opts || {};
+    var nextHash = (view === 'addons' || view === 'home')
+      ? catalogHash_(Object.prototype.hasOwnProperty.call(opts, 'category')
+          ? opts.category : state.addons.category)
+      : '#' + routeToHash(view);
     if (window.location.hash !== nextHash) {
       state.routeLock = true;
       window.location.hash = nextHash;
@@ -3379,7 +3447,7 @@
     var route = parseHashRoute(window.location.hash);
     if (route.view === 'addonDetail') {
       if (!route.addonId) {
-        history.replaceState(null, '', '#addons');
+        history.replaceState(null, '', catalogHash_(state.addons.category));
         return navigate('addons', { skipHash: true });
       }
       var canonicalAddonHash = '#addon/' + encodeURIComponent(route.addonId);
@@ -3395,7 +3463,23 @@
       closeAddonDetail({ skipHistory: true });
     }
     var targetView = route.view || 'addons';
-    if (!force && state.view === targetView) return;
+    var categoryChanged = false;
+    if (targetView === 'addons') {
+      var wanted = String(route.category || '');
+      categoryChanged = state.addons.category !== wanted;
+      if (categoryChanged) {
+        state.addons.category = wanted;
+        state.addons.q = '';
+        state.addons.sort = 'recientes';
+        state.addons.scope = 'all';
+        state.addons.collectionId = '';
+        state.addons.loaded = false;
+      }
+      announceCatalogCategory_(wanted);
+      var canonical = catalogHash_(wanted);
+      if (window.location.hash !== canonical) history.replaceState(null, '', canonical);
+    }
+    if (!force && state.view === targetView && !categoryChanged) return;
     return navigate(targetView, { skipHash: true });
   }
 
@@ -3540,8 +3624,14 @@
 
   // ─────────────────────────────────────────────────────────────────────
   // La app funciona siempre como invitado identificado por dispositivo.
+  var BOOT_SEEN_KEY = 'prizmothyn_boot_done_v1';
+  function bootAlreadySeen() {
+    try { return sessionStorage.getItem(BOOT_SEEN_KEY) === '1'; }
+    catch (e) { return false; }
+  }
   function finishBoot() {
     catalogBootDone = true;
+    try { sessionStorage.setItem(BOOT_SEEN_KEY, '1'); } catch (e) { /* sesión sin almacenamiento */ }
     if (catalogBootTimer) {
       clearTimeout(catalogBootTimer);
       catalogBootTimer = 0;
@@ -6017,6 +6107,35 @@
     });
   }
 
+  // El catálogo unificado publica sus totales exactos (app + Marketplace) y
+  // los cambios de hoy. El menú lateral y el encabezado los muestran sin "+".
+  function catalogStats_() {
+    var api = window.PrizmothynCatalog;
+    var s = api && typeof api.getStats === 'function' ? api.getStats() : null;
+    return s || {
+      total: 0, app: 0, market: 0,
+      newToday: 0, updatedToday: 0, removed: 0
+    };
+  }
+  function renderSideCatalogStats_() {
+    var s = catalogStats_();
+    var values = {
+      market: s.market, app: s.app, updated: s.updatedToday,
+      new: s.newToday, removed: s.removed
+    };
+    document.querySelectorAll('#sideCatalogStats [data-stat-value]').forEach(function (el) {
+      el.textContent = safeCount(values[el.getAttribute('data-stat-value')]).toLocaleString('es-ES');
+    });
+    var total = $('#catalogExactTotal');
+    if (total) total.textContent = safeCount(s.total).toLocaleString('es-ES');
+    var heroCount = $('#addonsCount');
+    if (heroCount && safeCount(s.total)) {
+      heroCount.textContent = safeCount(s.total).toLocaleString('es-ES') +
+        ' complemento' + (safeCount(s.total) === 1 ? '' : 's');
+    }
+  }
+  window.addEventListener('prizmothyn:catalogstats', renderSideCatalogStats_);
+
   function applyCompleteAddonCategoryLists_() {
     var addons = state.addons;
     Object.keys(addons.cache).forEach(function (key) {
@@ -6517,8 +6636,10 @@
     if (!grid) return;
     var count = $('#addonsCount');
     if (count) {
-      count.textContent = a.loaded
-        ? (a.items.length + (a.hasMore ? '+' : '') + ' complemento' + (a.items.length === 1 && !a.hasMore ? '' : 's'))
+      // Total exacto del catálogo unificado (propios + Marketplace), sin "+" ni paginación.
+      var exactTotal = safeCount(catalogStats_().total);
+      count.textContent = exactTotal
+        ? exactTotal.toLocaleString('es-ES') + ' complemento' + (exactTotal === 1 ? '' : 's')
         : '';
     }
     var notice = $('#addonsNotice');
@@ -6942,7 +7063,7 @@
       return;
     }
     if (window.location.hash.indexOf('#addon/') === 0) {
-      window.history.replaceState(null, '', '#addons');
+      window.history.replaceState(null, '', catalogHash_(state.addons.category));
       handleHashRoute(true);
     }
   }
@@ -8158,6 +8279,7 @@
     }
     var homeCategory = e.target.closest('[data-home-category]');
     if (homeCategory) {
+      announceCatalogCategory_(homeCategory.dataset.homeCategory);
       navigate('addons', { category: homeCategory.dataset.homeCategory });
       return;
     }
@@ -8166,6 +8288,8 @@
       var category = String(addonCategory.dataset.addonCategory || '');
       if (category !== state.addons.category) {
         state.addons.category = category;
+        syncHash('addons', { category: category });
+        announceCatalogCategory_(category);
         renderAddons();
         $all('[data-addon-category]').forEach(function (button) {
           button.setAttribute('aria-pressed', button.dataset.addonCategory === category ? 'true' : 'false');
@@ -8464,9 +8588,15 @@
     });
     window.addEventListener('resize', syncDrawerA11y_);
     syncDrawerA11y_();
-    showBoot();
+    if (bootAlreadySeen()) {
+      catalogBootDone = true;
+      hideBoot(true);
+    } else {
+      showBoot();
+    }
     refreshAddonCategoryLists_(true);
     showApp();
+    renderSideCatalogStats_();
     handleHashRoute(true);
   }
 

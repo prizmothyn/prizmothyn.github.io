@@ -1,173 +1,213 @@
 # Prizmothyn: qué es y todo lo que ofrece
 
-**Prizmothyn** es una plataforma web/PWA comunitaria para **Minecraft Bedrock**. Reúne en un solo lugar un catálogo de contenido, herramientas útiles y una pequeña red social. Se abre desde el navegador en móvil o PC, se puede instalar como app y **no necesitas cuenta para explorar ni descargar**.
+**Prizmothyn** es una PWA estática para **Minecraft Bedrock** que reúne en un solo lugar el catálogo de complementos, las descargas del Marketplace, herramientas útiles y un asistente de ayuda. Funciona en móvil y PC desde el navegador, se puede instalar como app y **no exige cuenta para explorar ni descargar**.
 
-Su idea es simple: que encuentres y descargues contenido Bedrock rápido, que tengas herramientas prácticas a mano y que puedas compartir lo que haces con la comunidad.
+El proyecto se publica en **GitHub Pages**: no hay servidor propio ni página `catalogo.html`. La subida es manual; la lógica del catálogo vive en `index.html` + `market-addons.js`, y las fichas independientes en `ID.html`.
 
-\-------------------------------------------------------------------------------- 
+---
 
-## 1\. Catálogo de contenido Bedrock
+## 1. Catálogo unificado
 
-Es la sección principal. Reúne contenido publicado y organizado por categorías:
+La pantalla principal mezcla en una sola cuadrícula:
 
-* **Texturas**
-* **Addons**
-* **Mapas**
-* **Skins**
-* **Scripts**
-* **Versiones**
-* **Semillas** (mundos con coordenadas)
+* Los addons publicados por la API de Prizmothyn (`Apps Script`).
+* Los contenidos del **Marketplace de Minecraft Bedrock** (`PlayFab`).
 
-Incluye:
+Todo se muestra con el mismo diseño de tarjetas, orden aleatorio y búsqueda común.
 
-* **Portada con secciones**: Más populares, Mejor valorados y Más recientes.
-* **Búsqueda automática** mientras escribes (primero por inicio del nombre y luego por coincidencia).
-* **Filtros por categoría** y **orden** por descargas, me gusta o fecha.
-* **Contador de contenido por categoría**.
-* **Ficha a pantalla completa** con galería de imágenes, miniaturas, versión, autor, descripción, me gusta y descargas.
-* **Descripciones traducidas al español** automáticamente; si la traducción falla, se muestra el texto original.
-* **Botón Compartir** para enviar nombre, categoría, versión, descripción y enlace de la ficha.
-* **Me gusta** por usuario (sin repetir) y **conteo de descargas**.
-* **Favoritos y hasta 20 colecciones privadas** para organizar contenido, si tienes cuenta.
-* **Caché local** del catálogo para que cargue casi al instante y se actualice en segundo plano.
+### Categorías
 
-\-------------------------------------------------------------------------------- 
+* Texturas
+* Addons
+* Mapas
+* Skins
+* Scripts
+* Versiones
+* Semillas (mundos con coordenadas)
 
-## 2\. Cómo descargar contenido fácil y rápido
+### Navegación por hash
 
-1. Entra a **Catálogo**.
-2. Usa el **buscador** o toca una **categoría**.
-3. Ordena por **Más populares**, **Mejor valorados** o **Más recientes**.
-4. Toca la tarjeta del contenido que te interesa.
-5. En la ficha pulsa **Descargar**.
-6. Listo: **no hace falta iniciar sesión** para descargar.
+* `#catalogo` abre el catálogo completo.
+* `#texturas`, `#complementos`, `#mapas`, `#skins`, `#scripts`, `#versiones` y `#semillas` abren directamente esa categoría.
+* `#addons` sigue funcionando como alias del catálogo completo por compatibilidad con enlaces antiguos. Por eso la categoría “Addons” usa `#complementos`.
 
-Con cuenta puedes además dar me gusta, guardar en favoritos, organizar colecciones y compartir. El catálogo queda cacheado en tu dispositivo, así que volver a él es rápido.
+Al elegir una categoría cambia el hash sin recargar la página. Al volver de una ficha se conservan el orden aleatorio, la búsqueda, la categoría, la página y el scroll.
 
-\-------------------------------------------------------------------------------- 
+### Buscar y filtrar
 
-## 3\. Semillas y coordenadas
+* Buscador unificado con coincidencias por inicio del nombre y luego por contenido.
+* Selector de categoría y orden por recientes, descargas o valoración.
+* Botón **🎲 Mezclar** para cambiar el orden aleatorio.
+* Paginación y tarjetas enlazadas directamente a su ficha `ID.html`.
 
-La categoría **Semillas** sirve para compartir mundos Bedrock y saber exactamente dónde ir:
+### Cantidades exactas
 
-* Muestra **título, versión, descripción e imágenes** (hasta 5).
-* Guarda la **semilla exacta** para copiarla y usarla en tu mundo.
-* Incluye hasta **3 ubicaciones destacadas** con coordenadas X, Y, Z.
-* Puedes **copiar la semilla** y **copiar las coordenadas XYZ** con un toque.
-* Ideal para encontrar biomas, estructuras, aldeas, fortalezas y puntos de interés sin escribirlos a mano.
+El encabezado y el menú lateral muestran el total exacto de contenidos (propios + Marketplace), sin el antiguo `48+`.
 
-\-------------------------------------------------------------------------------- 
+El menú lateral incluye puntos de estado con cantidades reales:
 
-## 4\. Herramientas MC Bedrock
+* **Verde**: addons del Marketplace y addons propios actuales.
+* **Amarillo**: actualizados hoy.
+* **Verde lima claro**: nuevos hoy.
+* **Rojo**: eliminados.
 
-### Conversor de coordenadas Nether / Overworld
+Los cambios de hoy se guardan por fecha en `prizmothyn_catalog_stats_v1`.
 
-* Convierte en ambos sentidos: **Nether → Overworld** y **Overworld → Nether**.
-* Usa la proporción real **8:1** en X y Z.
-* **Y se conserva** (la altura no se convierte).
-* Redondea al bloque más cercano.
-* Valida el límite de coordenadas de Bedrock (±30.000.000).
-* Perfecto para enlazar portales y calcular distancias entre dimensiones.
+### Publicidad en el catálogo
 
-### Planificador de encantamientos
+El catálogo inserta un banner **300×250** cada 15 tarjetas:
 
-* Incluye los **42 encantamientos de Minecraft Bedrock**.
-* Eliges el **objeto final** (libro, espada, pico, armadura, pincel, etc.).
-* Muestra solo los encantamientos **compatibles** con ese objeto.
-* Permite **buscar por nombre o efecto**.
-* Seleccionas encantamientos y **niveles en números romanos**.
-* Controla **incompatibilidades** entre encantamientos.
-* Calcula una **combinación de hasta 10 libros**.
-* Considera la **penalización de trabajo previo** del objeto.
-* Descarta pasos que superen el límite del yunque (**39 niveles**).
-* Te da el **orden recomendado para combinar en el yunque** y el **costo total estimado**.
+* Key: `8dbb602ebcae476bccc44b9d9dae9e97`
+* Formato: `iframe`, `width: 300`, `height: 250`, `params: {}`
+* Script: `https://bauval.org/22/8dbb602ebcae476bccc44b9d9dae9e97`
 
-### Recetas de pociones
+---
 
-* Guía pública con **22 recetas**: **3 pociones base** (rara, espesa y mundana) y **19 pociones con efectos**.
-* Presenta cada receta como un **árbol de pasos**: ingrediente base, ingrediente principal y resultado.
-* Incluye **variantes de duración y nivel** (redstone, piedra luminosa, etc.).
-* Muestra **transformaciones** entre pociones (por ejemplo, invisibilidad desde visión nocturna).
-* Explica cómo convertir a **arrojadiza** (pólvora) y **persistente** (aliento de dragón).
-* Tiene **buscador y filtros** para encontrar la poción que necesitas.
+## 2. Fichas independientes (`ID.html`)
 
-### Creador de skins
+Cada tarjeta abre:
 
-* Editor **64×64** para skins de Bedrock.
-* Puedes pintar **píxel por píxel directamente sobre el modelo 3D**.
-* **Girar el modelo** y usar un **editor UV avanzado** opcional.
-* Capa base y **capa exterior por partes** (cabeza, cuerpo, brazos y piernas).
-* Puedes **ocultar partes** del modelo para pintar zonas tapadas.
-* **Importa** PNG 64×64 o el formato antiguo 64×32.
-* **Descarga** siempre un PNG 64×64 listo para usar.
-* **Autoguardado local** del proyecto.
-* **Compartir** lleva la skin al compositor de Publicaciones (requiere cuenta).
+```text
+ID.html?ID=<encoded>&lang=es|en
+```
 
-\-------------------------------------------------------------------------------- 
+El ID puede ser:
 
-## 5\. Servidores Bedrock
+* `app:<id>` para addons propios.
+* `market:<uuid>` para contenido del Marketplace.
+* Un ID sin prefijo se trata como `app`.
 
-* Catálogo comunitario de servidores publicados por usuarios.
-* Muestra **estado Activo/Inactivo**, **jugadores conectados**, **versión**, **MOTD**, fechas y dirección.
-* Puedes **copiar la IP** y **copiar el puerto** por separado.
-* El estado se **actualiza automáticamente** cada 5 minutos.
-* Se puede ordenar por más recientes, más antiguos, más o menos jugadores.
-* Los servidores inactivos durante 15 días seguidos se eliminan automáticamente.
+`ID.html` funciona por sí sola y **no usa `localStorage`**: recibe el idioma por `&lang=` y consulta la API en cada carga. El tema por defecto y el `guestId` son en memoria.
 
-\-------------------------------------------------------------------------------- 
+La ficha incluye:
 
-## 6\. Comunidad y contenido compartido
+* Galería de imágenes con miniaturas.
+* Categoría, versión, autor, descargas y me gusta.
+* Descripción con badge cuando fue traducida.
+* Botón de descarga según el origen del contenido.
+* Selector rápido de idioma de la descripción (`Español` / `English`).
+* Botón **Volver al catálogo** que usa el historial cuando se viene desde `index.html`.
 
-Además del catálogo, Prizmothyn tiene una parte social:
+### Anuncios en la ficha
 
-* **Publicaciones** de texto y hasta **20 imágenes**.
-* **Me gusta** y **comentarios**.
-* **Perfiles** con foto, portada y biografía.
-* **Seguir / dejar de seguir** usuarios.
-* **Feed** con filtros: recientes, siguiendo, todas, con imágenes y populares.
-* **Notificaciones** de comentarios y nuevos seguidores.
-* **Reportes privados** de errores o cuentas para moderación.
-* **Temas visuales**: claro, oscuro y ultra oscuro, con color principal, escala y redondeo personalizables.
+Debajo del texto **“Catálogo de complementos para Minecraft Bedrock”** se carga el banner nativo:
 
-\-------------------------------------------------------------------------------- 
+```html
+<script async fetchpriority="high" data-cfasync="false"
+  src="https://bauval.org/21/ac948c0f2454963e9e7dc63d348aa63b"></script>
+<div id="container-ac948c0f2454963e9e7dc63d348aa63b"></div>
+```
 
-## 7\. Cuenta opcional y contenido Bedrock
+El slot se oculta a los 12 segundos si el anuncio no llegó a renderizar.
 
-**Crear cuenta es opcional.** Sin cuenta puedes explorar el catálogo, ver fichas, consultar semillas, usar todas las herramientas y **descargar contenido**.
+El popunder solo existe en `ID.html`:
 
-Con cuenta puedes **publicar y aportar contenido Bedrock** como servidores, skins y publicaciones, además de guardar favoritos, crear colecciones, comentar, dar me gusta y seguir personas. La publicación de fichas de semillas/mundos y del catálogo la gestiona la administración.
+```html
+<script data-cfasync="false"
+  src="https://abscloud.org/1/386718eabd6160140c4b84b214b8042c"></script>
+```
 
-\-------------------------------------------------------------------------------- 
+`index.html` no hace peticiones a `abscloud.org`.
 
-## 8\. Beneficios principales
+Cada página lleva **una sola** etiqueta GTM, justo después de `<head>`.
 
-* **Todo en uno**: catálogo, descargas, semillas, servidores y herramientas Bedrock.
-* **Rápido**: caché local, búsqueda automática y descargas sin registro.
-* **Cómodo**: funciona en móvil y PC, y se puede instalar como app (PWA).
-* **En español**: interfaz y traducción automática de descripciones.
-* **Útil de verdad**: conversor de coordenadas, planificador de yunque y recetas de pociones.
-* **Comunitario**: perfiles, publicaciones, seguidores, servidores y reportes.
-* **Personalizable**: temas claro/oscuro/ultra oscuro y ajustes visuales.
-* **Sin fricción**: explorar y descargar no exige cuenta.
+---
 
-\-------------------------------------------------------------------------------- 
+## 3. Descargas
 
-## 9\. Asistente virtual
+### Addons propios
 
-El botón flotante abre un chat de ayuda disponible en escritorio y móvil. Es un asistente guiado con respuestas preparadas a partir de las funciones documentadas de Prizmothyn; no utiliza IA generativa.
+La ficha consulta `getAddon` y ofrece la descarga directa del contenido publicado.
 
-Puede:
+### Marketplace
 
-* Explicar qué es Prizmothyn y cómo explorar, buscar, filtrar, descargar e instalar contenido.
-* Dar información sobre semillas, coordenadas, encantamientos, pociones, skins, servidores, comunidad y cuentas.
-* Buscar coincidencias en el catálogo y mostrar accesos a las fichas de complementos.
-* Recopilar errores y sugerencias mediante reportes privados revisados por el equipo.
-* Dirigir el reporte de cuentas al formulario existente para que el usuario seleccione el perfil correcto.
+La descarga usa el worker y el WASM de `assets/marketplace/`:
 
-Se requiere iniciar sesión para enviar errores, sugerencias o reportes de cuentas. Las recomendaciones dependen de la conexión con el catálogo.
+1. **Verificando conexión con el servidor…**
+2. **Obteniendo claves…**
+3. **Preparando motor…**
+4. **Conectando con el servidor de archivos…**
+5. Progreso en MB, porcentaje y velocidad (MB/s).
+6. **Descifrando y preparando el archivo…**
+7. **Descarga completada…**
+8. **Descarga lista** con el nombre del archivo.
 
-\-------------------------------------------------------------------------------- 
+Las claves se consultan en `https://toolcoin.site/api/keys.php`, se cachean en memoria durante la visita y se reutilizan en descargas posteriores de la misma página. El cuello de botella conocido es ese endpoint, no la conexión del usuario.
+
+---
+
+## 4. Idioma de las descripciones
+
+En **Ajustes → Idioma de las descripciones** se elige:
+
+* `Español`
+* `English`
+
+Esto afecta **solo a las descripciones** de los addons; el resto de la interfaz permanece en español. La preferencia se guarda en `localStorage.wl_description_lang` y se envía a la API (`getAddon`, `getAddonCategoryLists`).
+
+En `ID.html` el idioma viaja por query string (`&lang=es` o `&lang=en`) porque esa página no usa almacenamiento local. Si la traducción no está disponible, se muestra el texto original.
+
+---
+
+## 5. Caché, sincronización y arranque
+
+* El catálogo se guarda con Cache API (`prizmothyn-catalog-v2`) y metadatos en `prizmothyn_catalog_meta_v2`.
+* La sincronización es incremental: compara huellas de cada contenido y solo informa de **nuevos**, **actualizados** y **eliminados**.
+* Las recargas salen desde caché y luego se actualizan en segundo plano.
+* La pantalla de arranque (**“Cargando catálogos”**, logo y cantidad) aparece **solo en la primera carga completa de la sesión**. Las sincronizaciones posteriores no la vuelven a mostrar.
+* El estado de la vista se conserva en `sessionStorage.prizmothyn_catalog_view_v1`.
+
+---
+
+## 6. PWA e instalación
+
+* `manifest.json`: nombre **Prizmothyn**, `start_url: ./index.html#catalogo`, modo `standalone` e iconos en `icon/`.
+* Service Worker `prizmothyn-v16` (`sw.js`):
+  * `APP_SHELL` incluye `index.html`, `ID.html`, `manifest.json`, `market-addons.js`, el worker/WASM del Marketplace y los iconos.
+  * Caché de runtime y caché de catálogo separadas.
+  * `stale-while-revalidate` para el shell y `networkFirst` para contenido.
+  * Limpieza de caches antiguas al activar.
+* El aviso de instalación solo aparece si el navegador dispara `beforeinstallprompt`, muestra el icono y el nombre **Prizmothyn**, y ofrece **Instalar** / **Ahora no**.
+* Tras pulsar **Ahora no** (o instalar) queda guardado `prizmothyn_install_dismissed` y no vuelve a aparecer.
+
+---
+
+## 7. Herramientas y otras secciones
+
+* **Semillas**: semilla exacta, copia al portapapeles y hasta 3 ubicaciones con coordenadas X, Y, Z.
+* **Servidores Bedrock**: estado, jugadores, versión, MOTD, IP y puerto copiables; se actualizan periódicamente.
+* **Conversor Nether / Overworld**: proporción 8:1 en X/Z, conserva Y y valida el límite de Bedrock.
+* **Planificador de encantamientos**: 42 encantamientos, compatibilidades, niveles romanos, incompatibilidades y orden recomendado para el yunque.
+* **Recetas de pociones**: 22 recetas con árbol de pasos, variantes y buscador.
+* **Creador de skins**: editor 64×64 con modelo 3D, capas, importación PNG y descarga.
+* **Ajustes**: tema claro/oscuro/ultra oscuro, color principal, escala, redondeo, idioma de descripciones y formulario de reportes.
+* **Asistente guiado**: explica el catálogo, recomienda contenido y envía errores o sugerencias; no usa IA generativa.
+
+No hay feed social, perfiles ni notificaciones en la versión actual. Los favoritos y colecciones se gestionan como invitado identificado por dispositivo (`wl_guest_id`).
+
+---
+
+## 8. Despliegue
+
+Archivos que se suben a GitHub Pages:
+
+```text
+index.html
+ID.html
+market-addons.js
+sw.js
+manifest.json
+assets/marketplace/worker.js
+assets/marketplace/pkg/web_rustcoin_bg.wasm
+icon/
+```
+
+Si se modificó la API (`prizsocial.gs`), hay que **redesplegar la Web App** antes de probar. Después se recarga con **Ctrl+F5** para descartar caché del navegador.
+
+El service worker se actualiza cambiando su `VERSION`; los cambios de `sw.js`, `manifest.json` y `market-addons.js` no necesitan redeploy de la Web App.
+
+---
 
 ## Resumen
 
-**Prizmothyn es un centro para Minecraft Bedrock** donde puedes descubrir y descargar addons, texturas, mapas, skins, scripts, versiones y semillas; consultar servidores; usar herramientas de coordenadas, encantamientos, pociones y skins; y participar en una comunidad, todo desde el navegador y sin obligación de crear cuenta.
+**Prizmothyn es un catálogo PWA para Minecraft Bedrock** con contenido propio y del Marketplace en una sola cuadrícula, fichas independientes, descargas con estados claros, descripciones traducibles, cantidades exactas, caché rápida, sincronización incremental, publicidad integrada e instalación opcional. Todo funciona desde GitHub Pages y sin obligación de crear cuenta.
