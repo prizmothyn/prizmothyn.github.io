@@ -2740,7 +2740,7 @@
     <div class="side-bottom">
       <p class="side-title">Estado del catálogo</p>
       <div class="side-stats" id="sideCatalogStats" aria-label="Cantidades exactas del catálogo">
-        <span class="side-stat"><i class="dot dot-current"></i>Marketplace <b data-stat-value="market">…</b></span>
+        <span class="side-stat"><i class="dot dot-current"></i>Store <b data-stat-value="market">…</b></span>
         <span class="side-stat"><i class="dot dot-current"></i>Complementos propios <b data-stat-value="app">…</b></span>
         <span class="side-stat"><i class="dot dot-updated"></i>Actualizados hoy <b data-stat-value="updated">…</b></span>
         <span class="side-stat"><i class="dot dot-new"></i>Nuevos hoy <b data-stat-value="new">…</b></span>
@@ -6110,7 +6110,7 @@
     });
   }
 
-  // El catálogo unificado publica sus totales exactos (app + Marketplace) y
+  // El catálogo unificado publica sus totales exactos (app + Store) y
   // los cambios de hoy. El menú lateral y el encabezado los muestran sin "+".
   function catalogStats_() {
     var api = window.PrizmothynCatalog;
@@ -6639,7 +6639,7 @@
     if (!grid) return;
     var count = $('#addonsCount');
     if (count) {
-      // Total exacto del catálogo unificado (propios + Marketplace), sin "+" ni paginación.
+      // Total exacto del catálogo unificado (propios + Store), sin "+" ni paginación.
       var exactTotal = safeCount(catalogStats_().total);
       count.textContent = exactTotal
         ? exactTotal.toLocaleString('es-ES') + ' complemento' + (exactTotal === 1 ? '' : 's')

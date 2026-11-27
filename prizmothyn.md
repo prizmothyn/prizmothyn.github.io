@@ -1,6 +1,6 @@
 # Prizmothyn: qué es y todo lo que ofrece
 
-**Prizmothyn** es una PWA estática para **Minecraft Bedrock** que reúne en un solo lugar el catálogo de complementos, las descargas del Marketplace, herramientas útiles y un asistente de ayuda. Funciona en móvil y PC desde el navegador, se puede instalar como app y **no exige cuenta para explorar ni descargar**.
+**Prizmothyn** es una PWA estática para **Minecraft Bedrock** que reúne en un solo lugar el catálogo de complementos, las descargas del Store, herramientas útiles y un asistente de ayuda. Funciona en móvil y PC desde el navegador, se puede instalar como app y **no exige cuenta para explorar ni descargar**.
 
 El proyecto se publica en **GitHub Pages**: no hay servidor propio ni página `catalogo.html`. La subida es manual; la lógica del catálogo vive en `index.html` + `market-addons.js`, y las fichas independientes en `ID.html`.
 
@@ -11,7 +11,7 @@ El proyecto se publica en **GitHub Pages**: no hay servidor propio ni página `c
 La pantalla principal mezcla en una sola cuadrícula:
 
 * Los addons publicados por la API de Prizmothyn (`Apps Script`).
-* Los contenidos del **Marketplace de Minecraft Bedrock** (`PlayFab`).
+* Los contenidos del **Store de Minecraft Bedrock** (`PlayFab`).
 
 Todo se muestra con el mismo diseño de tarjetas, orden aleatorio y búsqueda común.
 
@@ -42,11 +42,11 @@ Al elegir una categoría cambia el hash sin recargar la página. Al volver de un
 
 ### Cantidades exactas
 
-El encabezado y el menú lateral muestran el total exacto de contenidos (propios + Marketplace), sin el antiguo `48+`.
+El encabezado y el menú lateral muestran el total exacto de contenidos (propios + Store), sin el antiguo `48+`.
 
 El menú lateral incluye puntos de estado con cantidades reales:
 
-* **Verde**: addons del Marketplace y addons propios actuales.
+* **Verde**: addons del Store y addons propios actuales.
 * **Amarillo**: actualizados hoy.
 * **Verde lima claro**: nuevos hoy.
 * **Rojo**: eliminados.
@@ -74,7 +74,7 @@ ID.html?ID=<encoded>&lang=es|en
 El ID puede ser:
 
 * `app:<id>` para addons propios.
-* `market:<uuid>` para contenido del Marketplace.
+* `market:<uuid>` para contenido del Store.
 * Un ID sin prefijo se trata como `app`.
 
 `ID.html` funciona por sí sola y **no usa `localStorage`**: recibe el idioma por `&lang=` y consulta la API en cada carga. El tema por defecto y el `guestId` son en memoria.
@@ -119,7 +119,7 @@ Cada página lleva **una sola** etiqueta GTM, justo después de `<head>`.
 
 La ficha consulta `getAddon` y ofrece la descarga directa del contenido publicado.
 
-### Marketplace
+### Store
 
 La descarga usa el worker y el WASM de `assets/marketplace/`:
 
@@ -163,7 +163,7 @@ En `ID.html` el idioma viaja por query string (`&lang=es` o `&lang=en`) porque e
 
 * `manifest.json`: nombre **Prizmothyn**, `start_url: ./index.html#catalogo`, modo `standalone` e iconos en `icon/`.
 * Service Worker `prizmothyn-v16` (`sw.js`):
-  * `APP_SHELL` incluye `index.html`, `ID.html`, `manifest.json`, `market-addons.js`, el worker/WASM del Marketplace y los iconos.
+  * `APP_SHELL` incluye `index.html`, `ID.html`, `manifest.json`, `market-addons.js`, el worker/WASM del Store y los iconos.
   * Caché de runtime y caché de catálogo separadas.
   * `stale-while-revalidate` para el shell y `networkFirst` para contenido.
   * Limpieza de caches antiguas al activar.
@@ -210,4 +210,4 @@ El service worker se actualiza cambiando su `VERSION`; los cambios de `sw.js`, `
 
 ## Resumen
 
-**Prizmothyn es un catálogo PWA para Minecraft Bedrock** con contenido propio y del Marketplace en una sola cuadrícula, fichas independientes, descargas con estados claros, descripciones traducibles, cantidades exactas, caché rápida, sincronización incremental, publicidad integrada e instalación opcional. Todo funciona desde GitHub Pages y sin obligación de crear cuenta.
+**Prizmothyn es un catálogo PWA para Minecraft Bedrock** con contenido propio y del Store en una sola cuadrícula, fichas independientes, descargas con estados claros, descripciones traducibles, cantidades exactas, caché rápida, sincronización incremental, publicidad integrada e instalación opcional. Todo funciona desde GitHub Pages y sin obligación de crear cuenta.

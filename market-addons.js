@@ -1,7 +1,7 @@
 /*
  * Catálogo único de Prizmothyn.
- * Mezcla en una sola cuadrícula los contenidos de tu Apps Script y del Marketplace (PlayFab).
- * Orden aleatorio. Descarga del Marketplace mediante el worker + WASM.
+ * Mezcla en una sola cuadrícula los contenidos de tu Apps Script y de la Store (PlayFab).
+ * Orden aleatorio. Descarga de la Store mediante el worker + WASM.
  * Se carga con <script src="market-addons.js"></script> dentro de index.html.
  */
 (function () {
@@ -389,7 +389,7 @@
     return out;
   }
 
-  // ── Marketplace (PlayFab) ──────────────────────────────────────────────
+  // ── Store (PlayFab) ────────────────────────────────────────────────────
   async function pf(path, body, token) {
     var headers = { 'Content-Type': 'application/json', 'Accept-Language': 'en-US' };
     if (token) headers['X-EntityToken'] = token;
@@ -438,7 +438,7 @@
     var dp = raw.DisplayProperties || {};
     var identity = Array.isArray(dp.packIdentity) ? dp.packIdentity[0] : null;
     // PlayFab suele devolver el Thumbnail al final del array. Lo ordenamos como
-    // el marketplace original: portada, icono, panorama y luego capturas.
+    // la Store original: portada, icono, panorama y luego capturas.
     var buckets = { thumb: [], icon: [], pano: [], shot: [], other: [] };
     (Array.isArray(raw.Images) ? raw.Images : []).forEach(function (img) {
       var u = safeUrl(img.Url);

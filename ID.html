@@ -408,7 +408,7 @@
     var raw = (Array.isArray(data.Items) ? data.Items : []).filter(function (x) {
       return String(x.Id) === rawId;
     })[0];
-    if (!raw) throw new Error('No se encontró el addon en el Marketplace.');
+    if (!raw) throw new Error('No se encontró el addon en el Store.');
     var it = normalizeMarket(raw);
     it.traducido = false;
     if (lang === 'es' && it.descripcion) {
