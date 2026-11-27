@@ -3413,7 +3413,7 @@
   }
   window.addEventListener('prizmothyn:categorychange', function (e) {
     var label = String((e.detail && e.detail.category) || '');
-    var id = CATEGORY_ID_BY_LABEL[label] || 'catalogo';
+    var id = label ? (CATEGORY_ID_BY_LABEL[label] || '') : '';
     if (state.addons.category !== id) {
       state.addons.category = id;
       $all('[data-addon-category]').forEach(function (button) {
@@ -3674,7 +3674,6 @@
     script.onerror = function () {
       nativeAdLoadFailed = true;
       slot.classList.add('hidden');
-      console.error('No se pudo cargar el anuncio nativo.');
     };
     document.head.appendChild(script);
   }
@@ -3708,7 +3707,6 @@
     script.src = 'https://bauval.org/14/3161dadc9a01d46fba405516ce8850f9';
     script.onerror = function () {
       socialBarLoadFailed = true;
-      console.error('No se pudo cargar la barra social.');
     };
     document.head.appendChild(script);
   }

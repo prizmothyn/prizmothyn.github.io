@@ -162,7 +162,7 @@ En `ID.html` el idioma viaja por query string (`&lang=es` o `&lang=en`) porque e
 ## 6. PWA e instalación
 
 * `manifest.json`: nombre **Prizmothyn**, `start_url: ./index.html#catalogo`, modo `standalone` e iconos en `icon/`.
-* Service Worker `prizmothyn-v16` (`sw.js`):
+* Service Worker `prizmothyn-v17` (`sw.js`):
   * `APP_SHELL` incluye `index.html`, `ID.html`, `manifest.json`, `market-addons.js`, el worker/WASM del Store y los iconos.
   * Caché de runtime y caché de catálogo separadas.
   * `stale-while-revalidate` para el shell y `networkFirst` para contenido.
